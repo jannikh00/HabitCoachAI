@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Page title block -->
+  <title>{% block title %}HabitCoach AI{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- CSRF token for security -->
+  {% csrf_token %}
+</head>
+<body>
+  <header>
+    <!-- Main navigation menu -->
+    <nav aria-label="Main">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'checkin_list' %}">My Check-ins</a>
+      <a href="{% url 'checkin_create' %}">New Check-in</a>
+    </nav>
+  </header>
+
+  <!-- Main content area -->
+  <main id="content" tabindex="-1">{% block content %}{% endblock %}</main>
+</body>
+</html>

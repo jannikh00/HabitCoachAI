@@ -38,16 +38,19 @@ class CheckIn(models.Model):
     )
 
     # optional free-text note
-    note = models.TextField(blank=True)
+    note = models.TextField(blank=True, default="")
 
     # optional 1–5 mood rating
     mood = models.PositiveSmallIntegerField(null=True, blank=True)
 
     # optional text to identify data source (web, api, cron, etc.)
-    source = models.CharField(max_length=32, blank=True)
+    source = models.CharField(max_length=16, default="web")
 
     # optional comma-separated tags
-    tags = models.CharField(max_length=128, blank=True)
+    tags = models.CharField(max_length=255, blank=True, default="")
+
+    # optional HRV RMSSD (ms)
+    hrv_rmssd = models.FloatField(null=True, blank=True)
 
     class Meta:
         # ensure one check-in per user per date

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  <!-- Page heading -->
+  <h1>Dashboard</h1>
+  <!-- Personalized greeting using the logged-in user's username -->
+  <p>Welcome, {{ request.user.username }}!</p>
+
+  <!-- (1) Current streak section -->
+  <!-- Displays how many consecutive days the user has checked in -->
+  <section aria-labelledby="streak">
+    <h2 id="streak">Current Streak</h2>
+    <p>{{ streak.days }} days</p>
+  </section>
+
+  <!-- (2) Mood and status trend over the past 7 days -->
+  <!-- Uses Django context variable 'trend', showing daily mood/status values -->
+  <section aria-labelledby="trend">
+    <h2 id="trend">7-Day Trend (Mood/Status)</h2>
+    <ul>
+      {% for point in trend %}
+        <!-- Each list item displays a date with associated mood and status -->
+        <li>{{ point.date }} — mood={{ point.mood|default:"–" }}, status={{ point.status }}</li>
+      {% endfor %}
+    </ul>
+    <!-- Reference: (Ref-C) background calculation of a 3-day moving average for mood tracking -->
+    <p><small>(Ref-C) 3-Day moving average for mood calculated in background.</small></p>
+  </section>
+  
+  <!-- Small Analytics Extension (Ref-C)
+       This section adds a lightweight analytics summary to the dashboard.
+       It uses data from the last 7 days (provided by the Django view) to show
+       how many "risk days" occurred — defined as days with low mood (≤2)
+       or a warning/block status. The approach is inspired by Ref-C (ISL),
+       applying a simple and interpretable statistical summary. -->
+  <section aria-labelledby="analytics">
+    <!-- Accessible heading label for screen readers -->
+    <h2 id="analytics">Analytics</h2>
+
+    <!-- Display the total number of "risk days" calculated in the backend -->
+    <p>
+      Risk days in the last 7&nbsp;days: <strong>{{ risk_count }}</strong>
+    </p>
+
+    <!-- Loop through the 7-day trend data and list each day that qualifies as "risky"
+         (either status = warn/block or mood ≤ 2). -->
+    <ul>
+      {% for point in trend %}
+        {% if point.status == "warn" or point.status == "block" or point.mood|default:3 <= 2 %}
+          <!-- Show the date, status, and mood for each risk day -->
+          <li>{{ point.date }} → {{ point.status }} (mood={{ point.mood|default:"–" }})</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+
+    <!-- Small note referencing Ref-C (ISL) to document the statistical rationale -->
+    <p>
+      <small>
+        (Ref-C) Simple statistical evaluation – counts days with low mood or warning status.
+      </small>
+    </p>
+  </section>
+
+  <!-- (3) Tiny Habits suggestion section -->
+  <!-- Displays a personalized behavioral suggestion derived from Tiny Habits model -->
+  <section aria-labelledby="tiny">
+    <h2 id="tiny">Tiny Habit Suggestion</h2>
+    <p>{{ tiny_prompt }}</p>
+    <!-- Reference: (Ref-A) Behavior model B=MAP (Motivation, Ability, Prompt) from Fogg (2020) [oai_citation:0‡Tiny Habits PDF.pdf](file-service://file-NuAXva6xhrtkyTnQcJKoan) -->
+    <p><small>(Ref-A) B=MAP, Starter-Step, Prompt-Design.</small></p>
+  </section>
+
+  <!-- (4) HRV tip section -->
+  <!-- Displays short context-based heart rate variability insights for recovery tracking -->
+  <section aria-labelledby="hrv">
+    <h2 id="hrv">HRV Note</h2>
+    <p>{{ hrv_tip }}</p>
+    <!-- Reference: (Ref-B) RMSSD interpretation from *Frontiers in Sports and Active Living* (Storniolo et al., 2025) [oai_citation:1‡fspor-1-1574087.pdf](file-service://file-3EVASBZjiZtSikC4S7tY8U) -->
+    <p><small>(Ref-B) Short Info about RMSSD Interpretation.</small></p>
+  </section>
+{% endblock %}

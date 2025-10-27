@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- page title -->
+  <title>Login</title>
+</head>
+<body>
+  <!-- main heading -->
+  <h1>Login</h1>
+
+  <!-- error message if authentication fails -->
+  {% if form.errors %}
+    <p>Invalid credentials</p>
+  {% endif %}
+
+  <!-- login form (POST method for secure credential submission) -->
+  <form method="post">
+    {% csrf_token %}  <!-- CSRF token for security -->
+
+    <!-- username input field -->
+    <div>
+      <label for="id_username">Username</label>
+      <input type="text" name="username" required id="id_username" autofocus>
+    </div>
+
+    <!-- password input field -->
+    <div>
+      <label for="id_password">Password</label>
+      <input type="password" name="password" required id="id_password">
+    </div>
+
+    <!-- submit button -->
+    <button type="submit">Sign in</button>
+
+    <!-- optional redirect target after successful login -->
+    <input type="hidden" name="next" value="{{ next }}">
+  </form>
+</body>
+</html>

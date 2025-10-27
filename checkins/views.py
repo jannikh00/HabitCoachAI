@@ -1,9 +1,11 @@
 # import helpers for authentication and date handling
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from zoneinfo import ZoneInfo
+from datetime import timedelta
 from .models import CheckIn
+from .forms import CheckInForm
 
 
 # view that creates a daily check-in for the logged-in user
@@ -27,3 +29,144 @@ def check_in_today(request):
     )
     # redirect user to admin list view after check-in
     return redirect("/admin/checkins/checkin/")
+
+
+# create new daily check-in (or update existing one for today)
+@login_required
+def checkin_create(request):
+    if request.method == "POST":
+        # bind POST data to form
+        form = CheckInForm(request.POST)
+        if form.is_valid():
+            # use fixed timezone (EST)
+            tz = ZoneInfo("America/New_York")
+            today = timezone.now().astimezone(tz).date()
+
+            # create or update check-in for today
+            obj, created = CheckIn.objects.get_or_create(
+                user=request.user,
+                local_date=today,
+                defaults={
+                    **form.cleaned_data,
+                    "checked_in_at": timezone.now(),
+                    "source": "web",
+                },
+            )
+
+            # if check-in already exists, update its fields
+            if not created:
+                for f, v in form.cleaned_data.items():
+                    setattr(obj, f, v)
+                obj.save()
+
+            # redirect to list view after saving
+            return redirect("checkin_list")
+    else:
+        # display empty form for GET requests
+        form = CheckInForm()
+
+    # render check-in form template
+    return render(request, "checkins/form.html", {"form": form})
+
+
+# list all recent check-ins (max 60) for logged-in user
+@login_required
+def checkin_list(request):
+    qs = CheckIn.objects.filter(user=request.user).order_by("-local_date")[:60]
+    return render(request, "checkins/list.html", {"checkins": qs})
+
+
+# helper: compute current streak (consecutive check-ins up to today)
+def _compute_streak(user):
+    dates = set(CheckIn.objects.filter(user=user).values_list("local_date", flat=True))
+    if not dates:
+        return 0
+    tz = ZoneInfo("America/New_York")
+    d = timezone.now().astimezone(tz).date()
+    streak = 0
+    while d in dates:
+        streak += 1
+        d = d - timedelta(days=1)
+    return streak
+
+
+# helper: get last n days of mood/status data
+def _last_n_days(user, n=7):
+    tz = ZoneInfo("America/New_York")
+    today = timezone.now().astimezone(tz).date()
+    qs = CheckIn.objects.filter(
+        user=user,
+        local_date__gte=today - timedelta(days=n - 1),
+        local_date__lte=today,
+    ).order_by("local_date")
+    by_date = {c.local_date: c for c in qs}
+    out = []
+    for i in range(n):
+        d = today - timedelta(days=(n - 1 - i))
+        c = by_date.get(d)
+        out.append(
+            {
+                "date": d,
+                "mood": getattr(c, "mood", None) if c else None,
+                "status": c.status if c else "miss",
+            }
+        )
+    return out
+
+
+# helper: generate Tiny Habit suggestion based on recent data (Ref-A)
+def _tiny_prompt_from_last(out):
+    # heuristic: suggest new habit if last 3 entries show risk or low mood
+    risky = any(
+        (p["status"] in ("warn", "block")) or (p["mood"] and p["mood"] <= 2)
+        for p in out[-3:]
+    )
+    if risky:
+        # based on B=MAP: attach to routine, immediate, simple
+        return "After brushing your teeth: take one deep breath + one sip of water. (tiny, instant, anchored)"
+    return "After breakfast: 10-second shoulder stretch. (small & consistent)"
+
+
+# helper: show HRV tip (Ref-B)
+def _hrv_tip_from_last(out, user):
+    # HRV (RMSSD) interpretation note — one low value ≠ low recovery
+    return (
+        "When measuring RMSSD, keep the time of day consistent. "
+        "A single low value means little without a 7-day trend."
+    )
+
+
+# helper: simple moving average for smoothing mood data (Ref-C)
+def _smooth(values, k=3):
+    res = []
+    for i in range(len(values)):
+        win = values[max(0, i - k + 1) : i + 1]
+        win = [v for v in win if v is not None]
+        res.append(sum(win) / len(win) if win else None)
+    return res
+
+
+# render main dashboard view
+@login_required
+def dashboard(request):
+    # compute user streak
+    streak = _compute_streak(request.user)
+
+    # get 7-day check-in history
+    trend = _last_n_days(request.user, n=7)
+
+    # apply simple mood smoothing (3-day moving average)
+    smoothed = _smooth([p["mood"] for p in trend], k=3)
+    for p, s in zip(trend, smoothed):
+        p["mood_smooth"] = s
+
+    # context for template rendering
+    ctx = {
+        "streak": {"days": streak},
+        "trend": trend,
+        "tiny_prompt": _tiny_prompt_from_last(trend),  # Ref-A: Tiny Habits
+        "hrv_tip": _hrv_tip_from_last(trend, request.user),  # Ref-B: HRV insights
+    }
+
+    # render dashboard template
+    return render(request, "checkins/dashboard.html", ctx)

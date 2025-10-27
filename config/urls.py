@@ -16,10 +16,14 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from checkins import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),  # admin dashboard
     path("checkin/today/", views.check_in_today, name="checkin_today"),  # my endpoint
+    path("", views.dashboard, name="dashboard"),
+    path("checkins/", views.checkin_list, name="checkin_list"),
+    path("checkins/new/", views.checkin_create, name="checkin_create"),
+    path("accounts/", include("django.contrib.auth.urls")),
 ]
