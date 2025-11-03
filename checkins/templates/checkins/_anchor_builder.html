@@ -1,0 +1,53 @@
+{# checkins/templates/checkins/_anchor_builder.html #}
+{# partial template for Week 6: builds habit anchor, prompt type, and celebration inputs #}
+{# includes a small JavaScript preview for “After I … I will …” habit recipe #}
+
+<!-- anchor text input: guides users to create an action-based habit trigger -->
+<div>
+  <label for="id_anchor_text">Anchor (optional)</label>
+  {{ form.anchor_text }}
+  <small>Use the recipe: “After I [existing action], I will [tiny behavior].”</small>
+</div>
+
+<!-- prompt type dropdown: lets users select between action, context, or person anchors -->
+<div>
+  <label for="id_prompt_type">Prompt Type</label>
+  {{ form.prompt_type }}
+  <small>Action-anchored prompts are usually most reliable.</small>
+</div>
+
+<!-- celebration input: short positive reinforcement phrase (Tiny Habits principle) -->
+<div>
+  <label for="id_celebration_note">Celebration</label>
+  {{ form.celebration_note }}
+  <small>Feeling good locks habits in — keep it short and positive.</small>
+</div>
+
+<hr/>
+
+<!-- live preview area: shows “After I … I will …” as the user types -->
+<p><strong>Preview</strong></p>
+<p id="anchor-preview" aria-live="polite">After I … I will …</p>
+
+<!-- small inline script for real-time preview updates -->
+<script>
+  // self-contained script (no dependencies)
+  // updates preview text as the user edits the anchor_text field
+  (function () {
+    const anchorInput = document.getElementById("id_anchor_text");
+    const preview = document.getElementById("anchor-preview");
+    if (!anchorInput || !preview) return;  // exit if elements not found
+
+    // update preview text dynamically
+    function updatePreview() {
+      const v = anchorInput.value.trim();
+      preview.textContent = v.length ? v : "After I … I will …";
+    }
+
+    // attach input listener for live updates
+    anchorInput.addEventListener("input", updatePreview);
+
+    // initialize preview on page load
+    updatePreview();
+  })();
+</script>

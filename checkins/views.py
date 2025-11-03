@@ -1,11 +1,12 @@
-# import helpers for authentication and date handling
+# imports
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from zoneinfo import ZoneInfo
 from datetime import timedelta
-from .models import CheckIn
-from .forms import CheckInForm
+from .models import CheckIn, Habit
+from .forms import CheckInForm, HabitForm
+from .services.prompts import assign_prompt_variant
 
 
 # view that creates a daily check-in for the logged-in user
@@ -170,3 +171,26 @@ def dashboard(request):
 
     # render dashboard template
     return render(request, "checkins/dashboard.html", ctx)
+
+
+# create new habit (Tiny Habits–style) for the logged-in user
+@login_required
+def habit_create(request):
+    # handle form submission
+    if request.method == "POST":
+        form = HabitForm(request.POST)
+        if form.is_valid():
+            # create Habit instance but delay saving to add user and variant
+            habit: Habit = form.save(commit=False)
+            habit.user = request.user
+            # assign randomized A/B prompt variant at creation
+            habit.prompt_variant = assign_prompt_variant()
+            habit.save()
+            # redirect to detail page after successful creation
+            return redirect("checkins:habit_detail", pk=habit.pk)
+    else:
+        # display blank form for GET requests
+        form = HabitForm()
+
+    # render habit creation template with bound or unbound form
+    return render(request, "checkins/habit_form.html", {"form": form})

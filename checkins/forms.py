@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 # imports
 from django import forms
-from .models import CheckIn
+from .models import CheckIn, Habit
 
 
 # define a model-based form for creating or editing check-ins
@@ -36,3 +38,37 @@ class CheckInForm(forms.ModelForm):
                 "HRV must be positive."
             )  # raise error if invalid
         return v  # return cleaned value
+
+
+# define HabitForm for creating or editing user-defined habits
+class HabitForm(forms.ModelForm):
+    # lightweight validation for ease of use (Tiny Habits principle: lower friction)
+    class Meta:
+        # bind the form to the Habit model
+        model = Habit
+
+        # include key fields for creating a habit
+        fields = [
+            "name",
+            "anchor_text",
+            "prompt_type",
+            "celebration_note",
+        ]
+
+        # customize form widgets with user-friendly placeholders
+        widgets = {
+            "anchor_text": forms.TextInput(
+                attrs={
+                    "placeholder": "After I start the kettle, I will fill my 12-oz water bottle."
+                }
+            ),
+            "celebration_note": forms.TextInput(
+                attrs={"placeholder": "Nice! / Fist bump / Small win 🔥"}
+            ),
+        }
+
+    # gently process and sanitize the name field without blocking user input
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()  # trim whitespace
+        # no strict validation — any hints handled in the template for flexibility
+        return name
