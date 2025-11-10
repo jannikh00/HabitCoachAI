@@ -1,0 +1,23 @@
+{# users/templates/users/register.html #}
+{# user registration page template extending the base layout. #}
+{# Context: Displays the custom RegisterForm (username, email, password1, password2)
+defined in users/forms.py. Upon successful submission, the user is redirected
+to the login page. #}
+
+{% extends "base.html" %}
+
+{% block content %}
+<!-- page heading -->
+<h2>Create Account</h2>
+
+<!-- registration form -->
+<form method="post">
+    {% csrf_token %} <!-- CSRF protection token for security -->
+
+    <!-- render all form fields with Django’s default <p>-based layout -->
+    {{ form.as_p }}
+
+    <!-- submit button to create a new user account -->
+    <button class="btn btn-primary" type="submit">Register</button>
+</form>
+{% endblock %}

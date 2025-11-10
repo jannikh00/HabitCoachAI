@@ -126,5 +126,6 @@ STATIC_ROOT = os.getenv("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- Login and Logout Redirect ---
-LOGIN_REDIRECT_URL = "dashboard"
-LOGOUT_REDIRECT_URL = "dashboard"
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "checkins:dashboard"
+LOGOUT_REDIRECT_URL = "users:login"

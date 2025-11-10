@@ -1,0 +1,21 @@
+{# checkins/templates/checkins/hrv_form.html #}
+{# Template for entering a new HRV (Heart Rate Variability) reading #}
+{# Context: Extends base layout, uses HRVReadingForm fields (rMSSD, SDNN, Resting HR, Notes) #}
+
+{% extends "base.html" %}
+
+{% block content %}
+<!-- page heading -->
+<h2>New HRV Reading</h2>
+
+<!-- HRV input form -->
+<form method="post">
+  {% csrf_token %} <!-- security token to prevent cross-site request forgery -->
+
+  <!-- render form fields with Django's default <p>-based layout -->
+  {{ form.as_p }}
+
+  <!-- submit button to save the HRV reading -->
+  <button class="btn btn-primary" type="submit">Save</button>
+</form>
+{% endblock %}

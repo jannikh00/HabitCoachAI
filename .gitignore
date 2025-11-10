@@ -276,3 +276,23 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,django,venv
+
+# Django / Python
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Environment
+.env
+.venv/
+venv/
+
+# Django stuff
+db.sqlite3
+media/
+staticfiles/
+
+# macOS
+.DS_Store
+

@@ -185,3 +185,102 @@ class BiometricsDaily(models.Model):
     def __str__(self) -> str:
         # human-readable string for debugging/admin
         return f"{self.user} biometrics on {self.date}"
+
+
+# HRVReading Model
+class HRVReading(models.Model):
+    """
+    Stores a single HRV-related measurement for a user.
+
+    Scientific basis:
+     HRV (Heart-Rate Variability) is used to assess autonomic nervous-system (ANS)
+     balance and training adaptation. Research shows that monitoring rMSSD and SDNN
+     indices can help adjust workload and recovery in athletes, as ANS shifts toward
+     sympathetic dominance under intense training stimuli  [oai_citation:3‡fspor-1-1574087.pdf](file-service://file-3EVASBZjiZtSikC4S7tY8U).
+    """
+
+    # Link each reading to a specific user; cascade deletion removes readings on user deletion
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="hrv_readings",
+    )
+
+    # Timestamp when measurement was taken (default = current time for convenience in logging)
+    measured_at = models.DateTimeField(default=timezone.now)
+
+    # rMSSD (ms) — root mean square of successive differences between RR intervals;
+    # reflects short-term parasympathetic activity
+    rmssd_ms = models.FloatField(help_text="rMSSD in ms", null=True, blank=True)
+
+    # SDNN (ms) — standard deviation of NN intervals; captures overall HRV variability
+    sdnn_ms = models.FloatField(help_text="SDNN in ms", null=True, blank=True)
+
+    # Resting heart rate (bpm); useful for interpreting fatigue and readiness
+    resting_hr = models.PositiveIntegerField(
+        help_text="Resting heart rate in bpm", null=True, blank=True
+    )
+
+    # Optional notes (e.g., context like “post-match morning” or “after recovery day”)
+    notes = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        # Order most recent measurements first for dashboard queries
+        ordering = ["-measured_at"]
+
+    def __str__(self) -> str:
+        """Readable string representation (e.g., ‘HRV demo @ 2025-11-09 06:30’)."""
+        return f"HRV {self.user} @ {self.measured_at:%Y-%m-%d %H:%M}"
+
+
+# HabitAnchor Model
+class HabitAnchor(models.Model):
+    """
+    Implements the Tiny Habits "After I ..., I will ..." recipe structure.
+
+    Behavioral basis:
+     According to B.J. Fogg’s Behavior Model, no behavior occurs without a prompt (MAP = Motivation,
+     Ability, Prompt). Action Prompts — or Anchors — attach new tiny behaviors to existing routines,
+     dramatically improving habit adherence  [oai_citation:4‡Tiny Habits PDF.pdf](file-service://file-NuAXva6xhrtkyTnQcJKoan).
+     Celebration further reinforces positive emotion and habit consolidation  [oai_citation:5‡Tiny Habits PDF.pdf](file-service://file-NuAXva6xhrtkyTnQcJKoan).
+    """
+
+    # Each anchor belongs to one user
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="habit_anchors",
+    )
+
+    # Existing behavior that serves as the anchor (prompt). E.g., "after I brush my teeth"
+    anchor_action = models.CharField(
+        max_length=160,
+        help_text="Existing action (e.g., ‘after I brush my teeth at night’).",
+    )
+
+    # The tiny new behavior attached to the anchor (prompt + action pair)
+    tiny_behavior = models.CharField(
+        max_length=160,
+        help_text="Small behavior (e.g., ‘I will do 3 deep breaths’).",
+    )
+
+    # Optional celebration — positive emotion reinforcement (e.g., smile or fist pump)
+    celebration = models.CharField(
+        max_length=160,
+        blank=True,
+        help_text="How to celebrate (Fogg: emotions wire habits).",
+    )
+
+    # Active flag allows disabling anchors without deletion (UX toggle or archive feature)
+    is_active = models.BooleanField(default=True)
+
+    # Auto-timestamp when anchor was created
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Order newest anchors first for quick retrieval in habit dashboards
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        # Readable summary in Tiny Habits syntax
+        return f"After {self.anchor_action} I will {self.tiny_behavior}"

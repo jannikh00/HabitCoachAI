@@ -2,7 +2,7 @@ from __future__ import annotations
 
 # imports
 from django import forms
-from .models import CheckIn, Habit
+from .models import CheckIn, Habit, HRVReading, HabitAnchor
 
 
 # define a model-based form for creating or editing check-ins
@@ -72,3 +72,38 @@ class HabitForm(forms.ModelForm):
         name = self.cleaned_data["name"].strip()  # trim whitespace
         # no strict validation — any hints handled in the template for flexibility
         return name
+
+
+# Form to allow users to manually log HRV (heart rate variability) metrics
+class HRVReadingForm(forms.ModelForm):
+
+    class Meta:
+        # bind to HRVReading model
+        model = HRVReading
+
+        # define the fields exposed in the form
+        fields = ["rmssd_ms", "sdnn_ms", "resting_hr", "notes"]
+
+
+# Form for creating and editing Tiny Habits recipes following
+class HabitAnchorForm(forms.ModelForm):
+
+    class Meta:
+        # bind to HabitAnchor model
+        model = HabitAnchor
+
+        # expose all relevant recipe fields
+        fields = ["anchor_action", "tiny_behavior", "celebration", "is_active"]
+
+        # customize widget placeholders for user clarity
+        widgets = {
+            "anchor_action": forms.TextInput(
+                attrs={"placeholder": "after I start my laptop in the morning"}
+            ),
+            "tiny_behavior": forms.TextInput(
+                attrs={"placeholder": "I will open the HabitCoach dashboard"}
+            ),
+            "celebration": forms.TextInput(
+                attrs={"placeholder": "I will say 'nice' to myself"}
+            ),
+        }

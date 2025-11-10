@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <!-- Page title block -->
@@ -8,17 +9,24 @@
   <!-- CSRF token for security -->
   {% csrf_token %}
 </head>
+
 <body>
   <header>
     <!-- Main navigation menu -->
     <nav aria-label="Main">
-      <a href="{% url 'dashboard' %}">Dashboard</a>
-      <a href="{% url 'checkin_list' %}">My Check-ins</a>
-      <a href="{% url 'checkin_create' %}">New Check-in</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'checkins:dashboard' %}">Dashboard</a>
+      <a href="{% url 'checkins:checkin_list' %}">My Check-ins</a>
+      <a href="{% url 'checkins:checkin_create' %}">New Check-in</a>
+      <a href="{% url 'users:logout' %}">Logout</a>
+      {% else %}
+      <a href="{% url 'users:login' %}">Login</a>
+      {% endif %}
     </nav>
   </header>
 
   <!-- Main content area -->
   <main id="content" tabindex="-1">{% block content %}{% endblock %}</main>
 </body>
+
 </html>

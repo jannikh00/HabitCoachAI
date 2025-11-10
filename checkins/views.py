@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 # imports
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from zoneinfo import ZoneInfo
 from datetime import timedelta
-from .models import CheckIn, Habit
-from .forms import CheckInForm, HabitForm
+from .models import CheckIn, Habit, HRVReading, HabitAnchor
+from .forms import CheckInForm, HabitForm, HRVReadingForm, HabitAnchorForm
 from .services.prompts import assign_prompt_variant
+from .services.scoring import predict_habit_completion_probability
 
 
 # view that creates a daily check-in for the logged-in user
@@ -194,3 +197,89 @@ def habit_create(request):
 
     # render habit creation template with bound or unbound form
     return render(request, "checkins/habit_form.html", {"form": form})
+
+
+# allow the authenticated user to manually record a new HRV (Heart Rate Variability) reading
+@login_required
+def hrv_create_view(request):
+
+    # handle form submission
+    if request.method == "POST":
+        form = HRVReadingForm(request.POST)
+        if form.is_valid():
+            # assign reading to current user before saving
+            hrv = form.save(commit=False)
+            hrv.user = request.user
+            hrv.save()
+            # redirect to HRV list after successful save
+            return redirect("checkins:hrv-list")
+    else:
+        # display empty form for GET request
+        form = HRVReadingForm()
+
+    # render HRV entry template
+    return render(
+        request,
+        "checkins/hrv_form.html",
+        {"form": form},
+    )
+
+
+# display the most recent HRV readings for the current user
+@login_required
+def hrv_list_view(request):
+
+    readings = HRVReading.objects.filter(user=request.user)[:30]
+    return render(request, "checkins/hrv_list.html", {"readings": readings})
+
+
+# create a new Tiny Habits–style anchor for the current user
+@login_required
+def habit_anchor_create_view(request):
+
+    # handle form submission
+    if request.method == "POST":
+        form = HabitAnchorForm(request.POST)
+        if form.is_valid():
+            # assign anchor to current user before saving
+            anchor = form.save(commit=False)
+            anchor.user = request.user
+            anchor.save()
+            # redirect to list view after successful creation
+            return redirect("checkins:habit-anchor-list")
+    else:
+        # display blank form for GET requests
+        form = HabitAnchorForm()
+
+    # render Tiny Habits form template
+    return render(
+        request,
+        "checkins/habit_anchor_form.html",
+        {"form": form},
+    )
+
+
+# display a list of all active habit anchors for the current user
+@login_required
+def habit_anchor_list_view(request):
+
+    anchors = HabitAnchor.objects.filter(user=request.user, is_active=True)
+    return render(request, "checkins/habit_anchor_list.html", {"anchors": anchors})
+
+
+# render the main user dashboard, extended for Week 7 with predictive analytics
+@login_required
+def dashboard_view(request):
+
+    # compute personalized habit completion probability
+    completion_prob = predict_habit_completion_probability(request.user)
+
+    # build dashboard context dictionary
+    context = {
+        # display probability as a percentage rounded to one decimal place
+        "completion_prob": round(completion_prob * 100, 1),
+        # TODO: merge with other Week 6 context keys (e.g., streaks, trends)
+    }
+
+    # render dashboard template with predictive metric included
+    return render(request, "checkins/dashboard.html", context)

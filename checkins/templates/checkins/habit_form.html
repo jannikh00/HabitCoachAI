@@ -1,27 +1,27 @@
 {# checkins/templates/checkins/habit_form.html #}
-{# template for creating a new habit with name, anchor, and celebration fields #}
+{# template for creating a new habit with name, anchor and celebration fields #}
 
 {% extends "base.html" %}
 
 {% block content %}
-  <!-- page heading -->
-  <h1>Create Habit</h1>
+<!-- page heading -->
+<h1>Create Habit</h1>
 
-  <!-- habit creation form -->
-  <form method="post">
-    {% csrf_token %}  <!-- CSRF protection token -->
+<!-- habit creation form -->
+<form method="post">
+  {% csrf_token %} <!-- CSRF protection token -->
 
-    <!-- habit name input -->
-    <div>
-      <label for="id_name">Name</label>
-      {{ form.name }}
-      <small>Keep it tiny (e.g., “1 push-up”, “Open notes app”).</small>
-    </div>
+  <!-- habit name input -->
+  <div>
+    <label for="id_name">Name</label>
+    {{ form.name }}
+    <small>Keep it tiny (e.g., “1 push-up”, “Open notes app”).</small>
+  </div>
 
-    <!-- include reusable partial for anchor, prompt type, and celebration fields -->
-    {% include "checkins/_anchor_builder.html" %}
+  <!-- include reusable partial for anchor, prompt type, and celebration fields -->
+  {% include "checkins/_anchor_builder.html" %}
 
-    <!-- submit button -->
-    <button type="submit">Save</button>
-  </form>
+  <!-- submit button -->
+  <button type="submit">Save</button>
+</form>
 {% endblock %}

@@ -1,0 +1,27 @@
+{# users/templates/users/login.html #}
+{# User login page template extending the base layout. #}
+{# Context: Uses Django’s built-in authentication form (LoginView) to handle user login
+and redirects to the dashboard upon success. #}
+
+{% extends "base.html" %}
+
+{% block content %}
+<!-- page heading -->
+<h2>Login</h2>
+
+<!-- user login form -->
+<form method="post">
+    {% csrf_token %} <!-- CSRF protection for security -->
+
+    <!-- render the default Django login form fields (username & password) -->
+    {{ form.as_p }}
+
+    <!-- submit button to log the user in -->
+    <button class="btn btn-primary" type="submit">Login</button>
+</form>
+
+<!-- optional note for users without an account -->
+<p class="mt-2 text-muted">
+    Don’t have an account? Contact your admin or register (if enabled).
+</p>
+{% endblock %}
