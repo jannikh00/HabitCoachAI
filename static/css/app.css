@@ -1,0 +1,929 @@
+/* =======================================================================
+   CSS for HabitCoachAI
+   - Global reset and typography
+   - Layout (header, main container, grid)
+   - Cards, buttons, forms, tables
+   - Dashboard-specific helpers (streak, readiness, risk tags, etc.)
+   ======================================================================= */
+
+
+/* -----------------------------------------------------------------------
+   1) CSS Variables: colors, spacing, radii, shadows
+   ----------------------------------------------------------------------- */
+
+:root {
+    /* Primary brand color (used for buttons, highlights) */
+    --color-primary: #2563eb;
+
+    /* Darker shade of primary for hover states */
+    --color-primary-dark: #1d4ed8;
+
+    /* Accent color for success / positive indicators */
+    --color-success: #16a34a;
+
+    /* Accent color for warnings / medium-risk */
+    --color-warning: #f59e0b;
+
+    /* Accent color for errors / high-risk */
+    --color-danger: #dc2626;
+
+    /* Neutral grayscale for text and surfaces */
+    --color-bg: #f5f5f7;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f1f5f9;
+    --color-border: #e2e8f0;
+    --color-border-strong: #cbd5f5;
+    --color-text: #0f172a;
+    --color-text-muted: #6b7280;
+
+    /* Shadows for cards and modals */
+    --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+    --shadow-subtle: 0 1px 3px rgba(15, 23, 42, 0.08);
+
+    /* Border radius for inputs and cards */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* Base spacing scale (multiples of 4px) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+
+    /* Max content width for main container */
+    --max-width: 1100px;
+
+    /* Base font size and line height */
+    --font-size-base: 16px;
+    --line-height-base: 1.6;
+}
+
+
+/* -----------------------------------------------------------------------
+   2) Global Reset / Base
+   ----------------------------------------------------------------------- */
+
+/* Use a simple box-sizing reset so padding/borders are easier to reason about */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    /* include padding and border in width/height */
+}
+
+/* Remove default margin from common structural elements */
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol {
+    margin: 0;
+    /* zero out browser defaults */
+    padding: 0;
+    /* zero out browser defaults */
+}
+
+/* Set global font and background */
+body.app-body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    /* platform-friendly font stack */
+    font-size: var(--font-size-base);
+    /* base font size */
+    line-height: var(--line-height-base);
+    /* base line height */
+    color: var(--color-text);
+    /* main text color */
+    background-color: var(--color-bg);
+    /* subtle gray background */
+    min-height: 100vh;
+    /* ensure full viewport height */
+}
+
+/* Make images responsive by default */
+img {
+    max-width: 100%;
+    /* images should not overflow their container */
+    height: auto;
+    /* maintain aspect ratio */
+    display: block;
+    /* avoid weird inline gaps */
+}
+
+/* Anchor styling */
+a {
+    color: var(--color-primary);
+    /* use primary color for links */
+    text-decoration: none;
+    /* remove underline by default */
+    transition: color 0.15s ease;
+    /* smooth color transition on hover */
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+    /* slightly darker on hover */
+}
+
+/* Basic list styling */
+ul,
+ol {
+    padding-left: 1.5rem;
+    /* indent lists slightly */
+}
+
+
+/* -----------------------------------------------------------------------
+   3) Layout: app header, main container & footer
+   ----------------------------------------------------------------------- */
+
+/* App header across all pages */
+.app-header {
+    position: sticky;
+    /* stick to top when scrolling */
+    top: 0;
+    /* align at very top */
+    z-index: 50;
+    /* stay above content */
+    background-color: var(--color-surface);
+    /* white background */
+    border-bottom: 1px solid var(--color-border);
+    /* subtle bottom border */
+    box-shadow: var(--shadow-subtle);
+    /* light shadow */
+}
+
+/* Inner header content with max width and alignment */
+.app-header-inner {
+    max-width: var(--max-width);
+    /* keep content from stretching too wide */
+    margin: 0 auto;
+    /* center horizontally */
+    padding: var(--space-3) var(--space-4);
+    /* vertical + horizontal padding */
+    display: flex;
+    /* flex for horizontal layout */
+    align-items: center;
+    /* vertically center items */
+    justify-content: space-between;
+    /* logo left, nav/right items right */
+    gap: var(--space-3);
+    /* space between child elements */
+}
+
+/* Site title / logo text */
+.app-logo {
+    font-weight: 700;
+    /* bold for emphasis */
+    letter-spacing: 0.04em;
+    /* small tracking for modern look */
+    text-transform: uppercase;
+    /* uppercase for logo feel */
+    font-size: 0.95rem;
+    /* slightly smaller than base text */
+    color: var(--color-text);
+    /* main text color */
+}
+
+/* Optional header subtitle / tagline */
+.app-tagline {
+    font-size: 0.75rem;
+    /* smaller text for tagline */
+    color: var(--color-text-muted);
+    /* muted color */
+}
+
+/* Header actions area (e.g., profile, logout) */
+.app-header-actions {
+    display: flex;
+    /* horizontal row */
+    align-items: center;
+    /* center vertically */
+    gap: var(--space-2);
+    /* spacing between buttons/links */
+}
+
+/* Main app container */
+.app-main {
+    max-width: var(--max-width);
+    /* same max width as header */
+    margin: 0 auto;
+    /* center main content */
+    padding: var(--space-5) var(--space-4) var(--space-6);
+    /* top, sides, bottom */
+}
+
+/* Page title at top of each view */
+.page-title {
+    font-size: 1.5rem;
+    /* larger text */
+    font-weight: 600;
+    /* semi-bold */
+    margin-bottom: var(--space-3);
+    /* spacing below */
+}
+
+/* Subheading / descriptive text under page title */
+.page-subtitle {
+    font-size: 0.9rem;
+    /* slightly smaller text */
+    color: var(--color-text-muted);
+    /* muted color */
+    margin-bottom: var(--space-5);
+    /* space below subtitle */
+}
+
+/* Optional footer styling */
+.app-footer {
+    max-width: var(--max-width);
+    /* align with main container width */
+    margin: 0 auto;
+    /* center horizontally */
+    padding: var(--space-4);
+    /* padding all around */
+    font-size: 0.8rem;
+    /* small footer text */
+    color: var(--color-text-muted);
+    /* muted color */
+    text-align: center;
+    /* center the text */
+}
+
+
+/* -----------------------------------------------------------------------
+   4) Grid & Flex utilities
+   ----------------------------------------------------------------------- */
+
+/* Generic flex row utility */
+.flex-row {
+    display: flex;
+    /* create flex container */
+    flex-wrap: wrap;
+    /* allow wrapping on small screens */
+    gap: var(--space-3);
+    /* gap between items */
+    align-items: center;
+    /* align items vertically center */
+}
+
+/* Generic flex grow utility */
+.flex-grow {
+    flex: 1 1 auto;
+    /* allow element to grow/shrink */
+}
+
+/* Dashboard main grid */
+.dashboard-grid {
+    display: grid;
+    /* CSS grid for cards */
+    grid-template-columns: 1fr;
+    /* one column by default (mobile) */
+    gap: var(--space-4);
+    /* spacing between cards */
+}
+
+/* Larger screen layout: 2-column grid */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 2fr 1.4fr;
+        /* main column + sidebar column */
+        align-items: flex-start;
+        /* align items at the top */
+    }
+}
+
+/* Simple 2-column card grid for secondary sections */
+.card-grid {
+    display: grid;
+    /* grid container */
+    grid-template-columns: 1fr;
+    /* default 1 column */
+    gap: var(--space-3);
+    /* vertical/horizontal gaps */
+}
+
+@media (min-width: 640px) {
+    .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* 2 columns */
+    }
+}
+
+
+/* -----------------------------------------------------------------------
+   5) Card component
+   ----------------------------------------------------------------------- */
+
+/* Base card style used everywhere */
+.card {
+    background-color: var(--color-surface);
+    /* white background */
+    border-radius: var(--radius-lg);
+    /* rounded corners */
+    border: 1px solid var(--color-border);
+    /* subtle border */
+    box-shadow: var(--shadow-soft);
+    /* soft shadow for depth */
+    padding: var(--space-4);
+    /* inner padding */
+}
+
+/* Card header / title row */
+.card-header {
+    display: flex;
+    /* flex layout for title + actions */
+    justify-content: space-between;
+    /* space between title and right side */
+    align-items: center;
+    /* vertically center */
+    margin-bottom: var(--space-3);
+    /* spacing below header row */
+}
+
+/* Card title text */
+.card-title {
+    font-size: 1rem;
+    /* default size */
+    font-weight: 600;
+    /* semi-bold */
+}
+
+/* Card subtitle or helper line */
+.card-subtitle {
+    font-size: 0.8rem;
+    /* small text */
+    color: var(--color-text-muted);
+    /* muted color */
+}
+
+/* Card body content */
+.card-body {
+    font-size: 0.9rem;
+    /* slightly smaller than base */
+}
+
+/* Subtle divider line inside cards */
+.card-divider {
+    border-top: 1px dashed var(--color-border);
+    /* dashed divider */
+    margin: var(--space-3) 0;
+    /* vertical spacing */
+}
+
+
+/* -----------------------------------------------------------------------
+   6) Buttons
+   ----------------------------------------------------------------------- */
+
+/* Base button style */
+.btn {
+    display: inline-flex;
+    /* makes alignment easy */
+    align-items: center;
+    /* center icon and text vertically */
+    justify-content: center;
+    /* center content horizontally */
+    padding: 0.5rem 0.9rem;
+    /* vertical and horizontal padding */
+    border-radius: var(--radius-md);
+    /* slightly rounded */
+    font-size: 0.9rem;
+    /* consistent button font size */
+    font-weight: 500;
+    /* medium weight */
+    border: 1px solid transparent;
+    /* allow border changes on variants */
+    cursor: pointer;
+    /* show pointer on hover */
+    gap: 0.4rem;
+    /* spacing between icon and text */
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    /* smooth transitions on state changes */
+}
+
+/* Primary brand button */
+.btn-primary {
+    background-color: var(--color-primary);
+    /* brand color background */
+    color: #ffffff;
+    /* white text */
+    border-color: var(--color-primary);
+    /* border matches background */
+}
+
+/* Hover state for primary button */
+.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+    /* darker on hover */
+    border-color: var(--color-primary-dark);
+    /* border matches hover bg */
+    box-shadow: var(--shadow-subtle);
+    /* slight shadow */
+}
+
+/* Secondary / ghost button */
+.btn-secondary {
+    background-color: transparent;
+    /* transparent background */
+    color: var(--color-text);
+    /* normal text color */
+    border-color: var(--color-border);
+    /* subtle border */
+}
+
+/* Hover state for secondary button */
+.btn-secondary:hover {
+    background-color: var(--color-surface-muted);
+    /* light gray background */
+}
+
+/* Small button size modifier */
+.btn-sm {
+    padding: 0.35rem 0.7rem;
+    /* reduced padding */
+    font-size: 0.8rem;
+    /* smaller text */
+}
+
+
+/* -----------------------------------------------------------------------
+   7) Forms and inputs
+   ----------------------------------------------------------------------- */
+
+/* Label styling */
+.form-label {
+    display: block;
+    /* labels span full width */
+    font-size: 0.85rem;
+    /* smaller text size */
+    font-weight: 500;
+    /* medium weight */
+    margin-bottom: var(--space-1);
+    /* space below label */
+}
+
+/* Base input styles (text, email, number, password, date, etc.) */
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    /* full width fields */
+    padding: 0.5rem 0.75rem;
+    /* inner padding */
+    border-radius: var(--radius-md);
+    /* rounded corners */
+    border: 1px solid var(--color-border);
+    /* neutral border */
+    background-color: var(--color-surface);
+    /* white background */
+    font-size: 0.9rem;
+    /* slightly smaller than base */
+    color: var(--color-text);
+    /* main text color */
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background-color 0.15s ease;
+    /* smooth focus state changes */
+}
+
+/* Textarea overrides height */
+.form-textarea {
+    min-height: 5rem;
+    /* ensure some height */
+    resize: vertical;
+    /* allow vertical resize only */
+}
+
+/* Select styling (compatible with Django default selects) */
+.form-select {
+    appearance: none;
+    /* remove native arrow styling (where supported) */
+}
+
+/* Focus state for all form controls */
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    /* remove default outline */
+    border-color: var(--color-primary);
+    /* use primary color for focus */
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+    /* subtle glow */
+}
+
+/* Help text under fields */
+.form-help {
+    font-size: 0.75rem;
+    /* small text */
+    color: var(--color-text-muted);
+    /* muted color */
+    margin-top: var(--space-1);
+    /* small margin above */
+}
+
+/* Spacing wrapper between fields */
+.form-group {
+    margin-bottom: var(--space-4);
+    /* space below each form group */
+}
+
+/* Validation error text */
+.form-error {
+    color: var(--color-danger);
+    /* red color for errors */
+    font-size: 0.8rem;
+    /* small text */
+    margin-top: var(--space-1);
+    /* tiny spacing */
+}
+
+
+/* -----------------------------------------------------------------------
+   8) Tables (for history / lists)
+   ----------------------------------------------------------------------- */
+
+.table {
+    width: 100%;
+    /* full width */
+    border-collapse: collapse;
+    /* remove space between cells */
+    font-size: 0.9rem;
+    /* compact size */
+}
+
+/* Header row styling */
+.table thead {
+    background-color: var(--color-surface-muted);
+    /* light gray header */
+}
+
+/* Header cell styling */
+.table th {
+    text-align: left;
+    /* align text to left */
+    padding: 0.6rem 0.75rem;
+    /* inner padding */
+    font-weight: 600;
+    /* semi-bold */
+    border-bottom: 1px solid var(--color-border);
+    /* bottom border */
+}
+
+/* Body cells */
+.table td {
+    padding: 0.6rem 0.75rem;
+    /* inner padding */
+    border-bottom: 1px solid var(--color-border);
+    /* bottom border */
+}
+
+/* Zebra striping for readability */
+.table tbody tr:nth-child(even) {
+    background-color: var(--color-bg);
+    /* alternate background */
+}
+
+/* Hover state for rows */
+.table tbody tr:hover {
+    background-color: var(--color-surface-muted);
+    /* slightly darker background */
+}
+
+
+/* -----------------------------------------------------------------------
+   9) Badges / tags / chips
+   ----------------------------------------------------------------------- */
+
+/* Base pill badge */
+.badge {
+    display: inline-flex;
+    /* inline flex for centering */
+    align-items: center;
+    /* vertical center */
+    padding: 0.15rem 0.5rem;
+    /* compact padding */
+    border-radius: 999px;
+    /* fully rounded pill shape */
+    font-size: 0.75rem;
+    /* small text */
+    font-weight: 500;
+    /* medium weight */
+    border: 1px solid transparent;
+    /* base border */
+}
+
+/* Neutral badge */
+.badge-neutral {
+    background-color: var(--color-surface-muted);
+    /* light gray bg */
+    color: var(--color-text-muted);
+    /* muted text */
+}
+
+/* Success badge (e.g., good streak day) */
+.badge-success {
+    background-color: rgba(22, 163, 74, 0.1);
+    /* translucent green */
+    color: var(--color-success);
+    /* green text */
+    border-color: rgba(22, 163, 74, 0.2);
+    /* soft border */
+}
+
+/* Warning badge (medium risk) */
+.badge-warning {
+    background-color: rgba(245, 158, 11, 0.08);
+    /* translucent yellow/orange */
+    color: var(--color-warning);
+    /* orange text */
+    border-color: rgba(245, 158, 11, 0.3);
+    /* soft border */
+}
+
+/* Danger badge (high risk or block) */
+.badge-danger {
+    background-color: rgba(220, 38, 38, 0.08);
+    /* translucent red */
+    color: var(--color-danger);
+    /* red text */
+    border-color: rgba(220, 38, 38, 0.3);
+    /* soft border */
+}
+
+
+/* -----------------------------------------------------------------------
+   10) Dashboard-specific elements
+   ----------------------------------------------------------------------- */
+
+/* Streak metric wrapper */
+.streak-summary {
+    display: flex;
+    /* flex for alignment */
+    align-items: baseline;
+    /* align baseline of text */
+    gap: var(--space-2);
+    /* spacing between label and value */
+}
+
+/* Streak value number */
+.streak-value {
+    font-size: 2rem;
+    /* large number */
+    font-weight: 700;
+    /* bold */
+}
+
+/* Streak label (e.g., "day streak") */
+.streak-label {
+    font-size: 0.85rem;
+    /* smaller text */
+    color: var(--color-text-muted);
+    /* muted color */
+}
+
+/* Readiness card wrapper */
+.readiness-status {
+    display: flex;
+    /* flex layout */
+    flex-direction: column;
+    /* stack vertically */
+    gap: var(--space-2);
+    /* spacing between lines */
+}
+
+/* Readiness label (e.g., "High readiness") */
+.readiness-label {
+    font-size: 0.95rem;
+    /* almost base size */
+    font-weight: 600;
+    /* semi-bold for emphasis */
+}
+
+/* Readiness description paragraph */
+.readiness-description {
+    font-size: 0.85rem;
+    /* smaller text */
+    color: var(--color-text-muted);
+    /* muted color */
+}
+
+/* Risk day list */
+.risk-day-list {
+    list-style: none;
+    /* remove bullet styling */
+    padding-left: 0;
+    /* remove left padding */
+    margin: 0;
+    /* reset margin */
+}
+
+/* Individual risk-day list item */
+.risk-day-item {
+    display: flex;
+    /* align chip + text */
+    justify-content: space-between;
+    /* space between date and status */
+    align-items: center;
+    /* vertical center */
+    padding: 0.4rem 0.5rem;
+    /* inner padding */
+    border-radius: var(--radius-md);
+    /* rounded corners */
+    background-color: var(--color-surface-muted);
+    /* light gray background */
+    margin-bottom: var(--space-2);
+    /* spacing between rows */
+}
+
+/* Text inside risk-day item */
+.risk-day-text {
+    font-size: 0.85rem;
+    /* small text */
+}
+
+/* Adherence probability large number display */
+.forecast-value {
+    font-size: 1.6rem;
+    /* big percentage */
+    font-weight: 700;
+    /* bold */
+}
+
+/* Secondary text under forecast */
+.forecast-caption {
+    font-size: 0.8rem;
+    /* small explanatory text */
+    color: var(--color-text-muted);
+    /* muted color */
+}
+
+/* Simple inline "sparkline" placeholder for mood trend (text version) */
+.trend-inline {
+    display: flex;
+    /* horizontal layout */
+    gap: 0.15rem;
+    /* small gap between dots */
+    align-items: flex-end;
+    /* align to bottom */
+}
+
+/* Individual "dot" representing a mood level */
+.trend-dot {
+    width: 0.5rem;
+    /* width of dot */
+    border-radius: 999px;
+    /* capsule shape */
+    background-color: var(--color-primary);
+    /* primary color */
+    opacity: 0.3;
+    /* base transparency */
+}
+
+/* Stronger dot (higher mood or highlighted day) */
+.trend-dot--strong {
+    opacity: 1;
+    /* fully opaque */
+}
+
+/* Height variants you can map to moods 1–5 in the template if you like */
+.trend-dot--h1 {
+    height: 0.25rem;
+}
+
+.trend-dot--h2 {
+    height: 0.4rem;
+}
+
+.trend-dot--h3 {
+    height: 0.6rem;
+}
+
+.trend-dot--h4 {
+    height: 0.85rem;
+}
+
+.trend-dot--h5 {
+    height: 1.1rem;
+}
+
+
+/* -----------------------------------------------------------------------
+   11) Alerts / flash messages
+   ----------------------------------------------------------------------- */
+
+/* Base alert style */
+.alert {
+    padding: var(--space-3);
+    /* inner padding */
+    border-radius: var(--radius-md);
+    /* rounded corners */
+    font-size: 0.85rem;
+    /* smaller text */
+    margin-bottom: var(--space-3);
+    /* spacing below alert */
+    border: 1px solid transparent;
+    /* allow variant borders */
+}
+
+/* Info alert */
+.alert-info {
+    background-color: #dbeafe;
+    /* light blue background */
+    border-color: #bfdbfe;
+    /* medium blue border */
+    color: #1e3a8a;
+    /* dark blue text */
+}
+
+/* Success alert */
+.alert-success {
+    background-color: #dcfce7;
+    /* light green background */
+    border-color: #bbf7d0;
+    /* medium green border */
+    color: #166534;
+    /* dark green text */
+}
+
+/* Warning alert */
+.alert-warning {
+    background-color: #fef9c3;
+    /* light yellow background */
+    border-color: #fef08a;
+    /* medium yellow border */
+    color: #92400e;
+    /* dark yellow/brown text */
+}
+
+/* Danger alert */
+.alert-danger {
+    background-color: #fee2e2;
+    /* light red background */
+    border-color: #fecaca;
+    /* medium red border */
+    color: #b91c1c;
+    /* dark red text */
+}
+
+
+/* -----------------------------------------------------------------------
+   12) Misc helpers
+   ----------------------------------------------------------------------- */
+
+/* Muted text helper */
+.text-muted {
+    color: var(--color-text-muted);
+    /* light gray text */
+}
+
+/* Uppercase helper (for small labels) */
+.text-uppercase {
+    text-transform: uppercase;
+    /* uppercase letters */
+    letter-spacing: 0.08em;
+    /* extra spacing */
+    font-size: 0.75rem;
+    /* small size */
+}
+
+/* Spacing helpers */
+.mt-2 {
+    margin-top: var(--space-2);
+}
+
+.mt-3 {
+    margin-top: var(--space-3);
+}
+
+.mb-2 {
+    margin-bottom: var(--space-2);
+}
+
+.mb-3 {
+    margin-bottom: var(--space-3);
+}
+
+.mb-4 {
+    margin-bottom: var(--space-4);
+}
+
+/* Center content horizontally */
+.text-center {
+    text-align: center;
+}

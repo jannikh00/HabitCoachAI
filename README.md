@@ -30,7 +30,7 @@ The project enables users to perform **daily check-ins** with mood tracking, not
 
 ---
 
-## Current Progress (Week 6)
+## Progress (Week 6)
 
 - Added **anchor-based prompts** and **celebration micro-UX** aligned with *Tiny Habits* principles (Ref-A)  
 - Extended `Habit` model with new fields: `anchor_text`, `prompt_type`, `celebration_note` and randomized `prompt_variant` for A/B testing  
@@ -43,6 +43,37 @@ The project enables users to perform **daily check-ins** with mood tracking, not
 - Added lightweight analytics utilities (`analytics/utils.py`) providing `permutation_test()` and `quick_vif()` for behavioral analysis  
 - Developed unit tests (`test_week6.py`) verifying new models, services and importer functionality  
 - Verified migrations, fixtures and dashboard compatibility with prior Week 5 implementation  
+
+---
+
+## Progress (Week 7)
+
+- Added new HRVReading model implementing rmssd_ms, sdnn_ms, and resting_hr based on physiological readiness metrics from Frontiers in Sports & Active Living (Ref-B)
+- Introduced HabitAnchor model aligned with B.J. Fogg’s Tiny Habits framework, enabling creation of “After I … I will …” prompt–behavior–celebration recipes (Ref-A)
+- Created user-facing templates (hrv_form.html, hrv_list.html, habit_anchor_form.html, habit_anchor_list.html) for HRV submission and habit anchor management
+- Implemented HRVReadingForm and HabitAnchorForm with structured placeholders and validation supporting ability-first habit design
+- Added authenticated views for HRV creation/listing and Habit Anchor creation/listing with full URL routing through the checkins namespace
+- Developed ISL-inspired prediction service (services/scoring.py) using a logistic-style estimator combining recent CheckIn trends with latest HRV data (Ref-C)
+- Updated dashboard view to display a “Today’s adherence forecast” probability derived from behavioral streaks and physiological readiness signals
+- Implemented custom UserLoginView and UserLogoutView with dedicated routing (users/urls.py) and integrated them into the project navigation
+- Refactored navigation bar with authentication-aware links and consistent namespaced URL usage (checkins: / users:)
+- Created a new superuser and validated Django admin access for all Week 7 data models (HRVReading, HabitAnchor, CheckIn)
+
+---
+
+## Current Progress (Week 8)
+
+- Unified the dashboard view to merge streak analytics, 7-day trend data, mood smoothing, risk-day detection, HRV readiness and adherence forecasting into one coherent backend pipeline
+- Added _classify_readiness() helper using rmssd_ms and resting_hr to generate “High / Moderate / Low readiness” categories based on HRV recovery indicators from Frontiers in Sports & Active Living (Ref-B)
+- Integrated Tiny Habits principles directly into dashboard microcopy, guiding users to shrink behaviors and celebrate wins on low-readiness days (Ref-A)
+- Updated dashboard.html with a new “Today’s Readiness” section showing readiness label, description and scaled habit-design guidance
+- Extended dashboard context with completion_prob, powered by predict_habit_completion_probability() — a logistic-style estimator inspired by An Introduction to Statistical Learning (Ref-C)
+- Implemented mood smoothing (_smooth(k=3)) for clearer short-term trends, following ISL’s emphasis on interpretable statistics (Ref-C)
+- Improved risk-day analytics by detecting warn/block statuses and low-mood days (≤2), exposing both risk_count and risk_days for template rendering
+- Added comprehensive Week 8 tests (test_week8_dashboard.py) validating streak output, trend population, readiness structure, HRV integration and forecast percentage bounds
+- Enforced authentication on the dashboard using @login_required to prevent anonymous-user errors in streak/HRV queries
+- Completed integration of the new navigation and styling across templates
+- Resolved logout routing and template discovery issues (users/logout.html) and fixed static file loading to ensure consistent UI across all screens
 
 ---
 

@@ -1,53 +1,59 @@
 {% extends "base.html" %}
+{% load form_tags %}
 {% include "checkins/_anchor_builder.html" %}
 {% block title %}New Check-in{% endblock %}
 
 {% block content %}
-  <!-- Page heading -->
-  <h1>New Check-in</h1>
+<!-- Page heading -->
+<h1 class="page-title">New Check-in</h1>
 
-  <!-- Check-in creation form -->
-  <!-- 'method="post"' sends data securely; 'novalidate' disables browser-side validation -->
-  <form method="post" novalidate>
-    <!-- CSRF token for security -->
-    {% csrf_token %}
+<!-- Page subheading (optional) -->
+<p class="page-subtitle">Log your status, mood, notes, tags, and optional HRV data.</p>
 
-    <!-- Display non-field-specific validation errors -->
+<!-- Check-in creation form -->
+<!-- 'method="post"' sends data securely; 'novalidate' disables browser-side validation -->
+<form method="post" novalidate class="card">
+  <!-- CSRF token for security -->
+  {% csrf_token %}
+
+  <!-- Display non-field-specific validation errors -->
+  <div class="form-error">
     {{ form.non_field_errors }}
+  </div>
 
-    <!-- Status selection (e.g., Active / Rest Day / Recovery) -->
-    <div>
-      <label for="{{ form.status.id_for_label }}">Status</label>
-      {{ form.status }}
-    </div>
+  <!-- Status selection (e.g., Active / Rest Day / Recovery) -->
+  <div class="form-group">
+    <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+    {{ form.status|add_class:"form-select" }}
+  </div>
 
-    <!-- Mood rating input (1 = low mood, 5 = high mood) -->
-    <div>
-      <label for="{{ form.mood.id_for_label }}">Mood (1–5)</label>
-      {{ form.mood }}
-    </div>
+  <!-- Mood rating input (1 = low mood, 5 = high mood) -->
+  <div class="form-group">
+    <label for="{{ form.mood.id_for_label }}" class="form-label">Mood (1–5)</label>
+    {{ form.mood|add_class:"form-input" }}
+  </div>
 
-    <!-- Optional note for additional comments or reflections -->
-    <div>
-      <label for="{{ form.note.id_for_label }}">Note</label>
-      {{ form.note }}
-    </div>
+  <!-- Optional note for additional comments or reflections -->
+  <div class="form-group">
+    <label for="{{ form.note.id_for_label }}" class="form-label">Note</label>
+    {{ form.note|add_class:"form-textarea" }}
+  </div>
 
-    <!-- Tags field for categorizing or filtering check-ins -->
-    <div>
-      <label for="{{ form.tags.id_for_label }}">Tags (comma separated)</label>
-      {{ form.tags }}
-    </div>
+  <!-- Tags field for categorizing or filtering check-ins -->
+  <div class="form-group">
+    <label for="{{ form.tags.id_for_label }}" class="form-label">Tags (comma separated)</label>
+    {{ form.tags|add_class:"form-input" }}
+  </div>
 
-    <!-- (Ref-B) Optional HRV input (Root Mean Square of Successive Differences in ms) -->
-    <!-- Supports physiological tracking in connection with HRV metrics -->
-    <div>
-      <label for="{{ form.hrv_rmssd.id_for_label }}">HRV RMSSD (ms)</label>
-      {{ form.hrv_rmssd }}
-      <small>Input optional — see info in dashboard.</small>
-    </div>
+  <!-- (Ref-B) Optional HRV input (Root Mean Square of Successive Differences in ms) -->
+  <!-- Supports physiological tracking in connection with HRV metrics -->
+  <div class="form-group">
+    <label for="{{ form.hrv_rmssd.id_for_label }}" class="form-label">HRV RMSSD (ms)</label>
+    {{ form.hrv_rmssd|add_class:"form-input" }}
+    <small class="form-help">Input optional — see info in dashboard.</small>
+  </div>
 
-    <!-- Submit button -->
-    <button type="submit">Save</button>
-  </form>
+  <!-- Submit button -->
+  <button type="submit" class="btn btn-primary mt-3">Save</button>
+</form>
 {% endblock %}

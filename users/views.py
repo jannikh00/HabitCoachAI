@@ -2,7 +2,6 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import CreateView
 from .forms import RegisterForm
-from typing import cast
 
 
 # custom user login view extending Django’s built-in LoginView
@@ -20,7 +19,7 @@ class UserLoginView(LoginView):
 class UserLogoutView(LogoutView):
 
     # redirect target after successful logout
-    next_page = cast(str, reverse_lazy("users:login"))
+    template_name = "users/logout.html"
 
 
 # view handling user registration

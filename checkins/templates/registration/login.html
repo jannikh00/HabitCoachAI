@@ -1,40 +1,36 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <!-- page title -->
-  <title>Login</title>
-</head>
-<body>
-  <!-- main heading -->
-  <h1>Login</h1>
+{% extends "base.html" %}
 
-  <!-- error message if authentication fails -->
-  {% if form.errors %}
-    <p>Invalid credentials</p>
-  {% endif %}
+{% block content %}
 
-  <!-- login form (POST method for secure credential submission) -->
-  <form method="post">
-    {% csrf_token %}  <!-- CSRF token for security -->
+<!-- main heading -->
+<h1 class="page-title">Login</h1>
 
-    <!-- username input field -->
-    <div>
-      <label for="id_username">Username</label>
-      <input type="text" name="username" required id="id_username" autofocus>
-    </div>
+<!-- error message if authentication fails -->
+{% if form.errors %}
+<p class="alert alert-danger">Invalid credentials</p>
+{% endif %}
 
-    <!-- password input field -->
-    <div>
-      <label for="id_password">Password</label>
-      <input type="password" name="password" required id="id_password">
-    </div>
+<!-- login form (POST method for secure credential submission) -->
+<form method="post" class="card">
+  {% csrf_token %} <!-- CSRF token for security -->
 
-    <!-- submit button -->
-    <button type="submit">Sign in</button>
+  <!-- username input field -->
+  <div class="form-group">
+    <label for="id_username" class="form-label">Username</label>
+    <input type="text" name="username" required id="id_username" autofocus class="form-input">
+  </div>
 
-    <!-- optional redirect target after successful login -->
-    <input type="hidden" name="next" value="{{ next }}">
-  </form>
-</body>
-</html>
+  <!-- password input field -->
+  <div class="form-group">
+    <label for="id_password" class="form-label">Password</label>
+    <input type="password" name="password" required id="id_password" class="form-input">
+  </div>
+
+  <!-- submit button -->
+  <button type="submit" class="btn btn-primary mt-3">Sign in</button>
+
+  <!-- optional redirect target after successful login -->
+  <input type="hidden" name="next" value="{{ next }}">
+</form>
+
+{% endblock %}

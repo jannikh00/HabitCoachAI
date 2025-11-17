@@ -64,7 +64,7 @@ def checkin_create(request):
                 obj.save()
 
             # redirect to list view after saving
-            return redirect("checkin_list")
+            return redirect("checkins:checkin_list")
     else:
         # display empty form for GET requests
         form = CheckInForm()
@@ -150,30 +150,135 @@ def _smooth(values, k=3):
     return res
 
 
-# render main dashboard view
-@login_required
-def dashboard(request):
-    # compute user streak
-    streak = _compute_streak(request.user)
+# map the most recent HRV reading into a coarse readiness category
+def _classify_readiness(latest_hrv: HRVReading | None) -> dict[str, str]:
 
-    # get 7-day check-in history
-    trend = _last_n_days(request.user, n=7)
+    # if we don't have any HRV reading yet, we fall back to a neutral state
+    if latest_hrv is None:
+        return {
+            "label": "Unknown",
+            "description": (
+                "No HRV data yet. Consider adding a morning measurement to "
+                "better tune your training and habit load."
+            ),
+        }
 
-    # apply simple mood smoothing (3-day moving average)
-    smoothed = _smooth([p["mood"] for p in trend], k=3)
-    for p, s in zip(trend, smoothed):
-        p["mood_smooth"] = s
+    # extract rMSSD (in milliseconds); if missing, treat as 0.0 to avoid crashes
+    rmssd = latest_hrv.rmssd_ms or 0.0
+    # extract resting heart rate; if missing, assume 70 bpm as a neutral baseline
+    resting_hr = latest_hrv.resting_hr or 70
 
-    # context for template rendering
-    ctx = {
-        "streak": {"days": streak},
-        "trend": trend,
-        "tiny_prompt": _tiny_prompt_from_last(trend),  # Ref-A: Tiny Habits
-        "hrv_tip": _hrv_tip_from_last(trend, request.user),  # Ref-B: HRV insights
+    # --- Simple heuristics inspired by Ref-B --------------------------------
+    # higher rMSSD and lower resting HR are generally associated with better recovery
+    # I use rough thresholds to keep this understandable by users
+    # NOTE: these are not clinical thresholds, just educational examples
+    # -------------------------------------------------------------------------
+
+    # Case 1: Strong recovery signal (green) – good day to push habits/training
+    if rmssd >= 60 and resting_hr <= 60:
+        return {
+            "label": "High readiness",
+            "description": (
+                "Your HRV suggests good recovery and low resting heart rate. "
+                "This is a great day to aim for a slightly more challenging habit."
+            ),
+        }
+
+    # Case 2: Moderate recovery signal (yellow) – keep habits tiny and sustainable
+    if 40 <= rmssd < 60 and 60 < resting_hr <= 70:
+        return {
+            "label": "Moderate readiness",
+            "description": (
+                "Your HRV is in a moderate range. Stay consistent with tiny habits, "
+                "but avoid large jumps in difficulty."
+            ),
+        }
+
+    # Case 3: Lower recovery signal (red) – lean heavily on Tiny Habits principles
+    # (Ref-A: emphasize shrinking the behavior and celebrating completion)
+    return {
+        "label": "Low readiness",
+        "description": (
+            "Your current HRV pattern suggests higher load or incomplete recovery. "
+            "Keep habits very small today and focus on easy wins and celebration."
+        ),
     }
 
-    # render dashboard template
-    return render(request, "checkins/dashboard.html", ctx)
+
+# see description below
+@login_required
+def dashboard(request):
+    """
+    unified dashboard view that combines:
+
+    - streak and 7-day trend (Week 5 analytics, Tiny Habits framing – Ref-A)
+    - risk-day summary (status warn/block or low mood)
+    - HRV-informed readiness classification (Ref-B)
+    - logistic-style adherence forecast (Ref-C)
+    """
+
+    # 1) compute the user's current streak of consecutive check-in days
+    streak_days = _compute_streak(request.user)
+
+    # 2) retrieve the last 7 days of check-ins for the trend visualization
+    trend = _last_n_days(request.user, n=7)
+
+    # 3) apply simple 3-day moving average smoothing to the mood values
+    raw_moods = [point["mood"] for point in trend]
+    smoothed_moods = _smooth(raw_moods, k=3)
+
+    # attach the smoothed values back onto each trend point for the template
+    for point, smooth_value in zip(trend, smoothed_moods):
+        # store as `mood_smooth` so the template can access it explicitly
+        point["mood_smooth"] = smooth_value
+
+    # 4) compute "risk days" in the last week
+    risk_days = []
+    for point in trend:
+        # extract daily status and mood from the point dictionary
+        status = point.get("status")
+        mood = point.get("mood")
+
+        # check if day should be counted as "risky"
+        if status in {"warn", "block"} or (mood is not None and mood <= 2):
+            risk_days.append(point)
+
+    # precompute the count for easier template rendering
+    risk_count = len(risk_days)
+
+    # 5) fetch the most recent HRV reading for the current user
+    latest_hrv = (
+        HRVReading.objects.filter(user=request.user)
+        .order_by("-measured_at")  # assuming `measured_at` datetime field exists
+        .first()
+    )
+
+    # classify readiness using our helper (Ref-B)
+    readiness_info = _classify_readiness(latest_hrv)
+
+    # 6) compute the predicted adherence probability for the next habit
+    completion_probability = predict_habit_completion_probability(request.user)
+
+    # convert to a percentage with one decimal place for display
+    completion_probability_percent = round(completion_probability * 100.0, 1)
+
+    # 7) Build the context dictionary for the template
+    context = {
+        # streak information in a nested structure (keeps template simple)
+        "streak": {"days": streak_days},
+        # 7-day trend including smoothed mood values
+        "trend": trend,
+        # risk-day analytics (count and detailed list)
+        "risk_count": risk_count,
+        "risk_days": risk_days,
+        # HRV-based readiness classification from Step 5
+        "readiness": readiness_info,
+        # logistic-model forecast percentage (Step 6)
+        "completion_prob": completion_probability_percent,
+    }
+
+    # 8) Render the dashboard template with the full analytics context
+    return render(request, "checkins/dashboard.html", context)
 
 
 # create new habit (Tiny Habits–style) for the logged-in user

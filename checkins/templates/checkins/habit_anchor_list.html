@@ -7,23 +7,27 @@ with optional celebration text, reflecting Fogg’s behavior model (Prompt–Act
 
 {% block content %}
 <!-- page heading -->
-<h2>My Habit Anchors</h2>
+<h2 class="page-title">My Habit Anchors</h2>
 
 <!-- unordered list of all active habit anchors -->
-<ul>
-    <!-- loop through each active HabitAnchor passed from the view -->
-    {% for a in anchors %}
-    <li>
-        <!-- display formatted Tiny Habits recipe, including optional celebration -->
-        <strong>After {{ a.anchor_action }}</strong>
-        I will {{ a.tiny_behavior }}
-        {% if a.celebration %}
-        and celebrate by {{ a.celebration }}
-        {% endif %}
-    </li>
-    {% empty %}
-    <!-- message shown if the user has no active anchors -->
-    <li>No anchors yet.</li>
-    {% endfor %}
-</ul>
+<section class="card">
+    <ul class="risk-day-list">
+        <!-- loop through each active HabitAnchor passed from the view -->
+        {% for a in anchors %}
+        <li class="risk-day-item">
+            <!-- display formatted Tiny Habits recipe, including optional celebration -->
+            <span class="risk-day-text">
+                <strong>After {{ a.anchor_action }}</strong>
+                I will {{ a.tiny_behavior }}
+                {% if a.celebration %}
+                and celebrate by {{ a.celebration }}
+                {% endif %}
+            </span>
+        </li>
+        {% empty %}
+        <!-- message shown if the user has no active anchors -->
+        <li class="risk-day-item text-muted">No anchors yet.</li>
+        {% endfor %}
+    </ul>
+</section>
 {% endblock %}

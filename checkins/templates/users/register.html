@@ -8,16 +8,21 @@ to the login page. #}
 
 {% block content %}
 <!-- page heading -->
-<h2>Create Account</h2>
+<h2 class="page-title">Create Account</h2>
+<p class="page-subtitle">Fill out the information below to register a new account.</p>
 
 <!-- registration form -->
-<form method="post">
+<form method="post" class="card">
     {% csrf_token %} <!-- CSRF protection token for security -->
 
     <!-- render all form fields with Django’s default <p>-based layout -->
     {{ form.as_p }}
 
     <!-- submit button to create a new user account -->
-    <button class="btn btn-primary" type="submit">Register</button>
+    <button class="btn btn-primary mt-3" type="submit">Register</button>
 </form>
+<p class="mt-2 text-muted">
+    Already have an account?
+    <a href="{% url 'users:login' %}" class="btn btn-secondary btn-sm">Log in</a>
+</p>
 {% endblock %}

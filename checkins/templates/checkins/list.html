@@ -2,11 +2,13 @@
 {% block title %}My Check-ins{% endblock %}
 
 {% block content %}
-  <!-- Page heading -->
-  <h1>My Check-ins</h1>
+<!-- Page heading -->
+<h1 class="page-title">My Check-ins</h1>
+<p class="page-subtitle">Overview of all your submitted check-ins.</p>
 
-  <!-- Table displaying all user-submitted check-ins -->
-  <table>
+<!-- Table displaying all user-submitted check-ins -->
+<section class="card">
+  <table class="table">
     <thead>
       <tr>
         <!-- Column headers for check-in data -->
@@ -20,25 +22,28 @@
     <tbody>
       <!-- Loop through each check-in object passed from the view -->
       {% for c in checkins %}
-        <tr>
-          <!-- Localized date of the check-in -->
-          <td>{{ c.local_date }}</td>
+      <tr>
+        <!-- Localized date of the check-in -->
+        <td>{{ c.local_date }}</td>
 
-          <!-- Human-readable status label (via model's choices display) -->
-          <td>{{ c.get_status_display }}</td>
+        <!-- Human-readable status label (via model's choices display) -->
+        <td>{{ c.get_status_display }}</td>
 
-          <!-- Mood value or dash if missing -->
-          <td>{{ c.mood|default:"–" }}</td>
+        <!-- Mood value or dash if missing -->
+        <td>{{ c.mood|default:"–" }}</td>
 
-          <!-- HRV RMSSD (ms), or dash if not provided -->
-          <!-- Optional physiological metric for recovery tracking -->
-          <td>{{ c.hrv_rmssd|default:"–" }}</td>
-        </tr>
+        <!-- HRV RMSSD (ms), or dash if not provided -->
+        <!-- Optional physiological metric for recovery tracking -->
+        <td>{{ c.hrv_rmssd|default:"–" }}</td>
+      </tr>
 
       <!-- Fallback row if user has no check-ins yet -->
       {% empty %}
-        <tr><td colspan="4">No check-ins yet.</td></tr>
+      <tr>
+        <td colspan="4" class="text-muted">No check-ins yet.</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
+</section>
 {% endblock %}

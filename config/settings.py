@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",  # adds human-readable number filters
     "checkins",  # the custom app
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -119,6 +120,10 @@ USE_TZ = True
 
 # --- Static files ---
 STATIC_URL = "static/"
+# top-level static directory
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 # For production collectstatic:
 STATIC_ROOT = os.getenv("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
 
@@ -128,4 +133,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --- Login and Logout Redirect ---
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "checkins:dashboard"
-LOGOUT_REDIRECT_URL = "users:login"
+# REMOVED: LOGOUT_REDIRECT_URL = "users:login"

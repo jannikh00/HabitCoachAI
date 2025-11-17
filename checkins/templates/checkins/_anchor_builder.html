@@ -1,33 +1,35 @@
+{% extends "base.html" %}
+{% load form_tags %}
 {# checkins/templates/checkins/_anchor_builder.html #}
 {# builds habit anchor, prompt type and celebration inputs #}
 {# includes a small JavaScript preview for “After I … I will …” habit recipe #}
 
 <!-- anchor text input: guides users to create an action-based habit trigger -->
-<div>
-  <label for="id_anchor_text">Anchor (optional)</label>
-  {{ form.anchor_text }}
-  <small>Use the recipe: “After I [existing action], I will [tiny behavior].”</small>
+<div class="form-group">
+  <label for="id_anchor_text" class="form-label">Anchor (optional)</label>
+  {{ form.anchor_text|add_class:"form-input" }}
+  <small class="form-help">Use the recipe: “After I [existing action], I will [tiny behavior].”</small>
 </div>
 
 <!-- prompt type dropdown: lets users select between action, context, or person anchors -->
-<div>
-  <label for="id_prompt_type">Prompt Type</label>
-  {{ form.prompt_type }}
-  <small>Action-anchored prompts are usually most reliable.</small>
+<div class="form-group">
+  <label for="id_prompt_type" class="form-label">Prompt Type</label>
+  {{ form.prompt_type|add_class:"form-select" }}
+  <small class="form-help">Action-anchored prompts are usually most reliable.</small>
 </div>
 
 <!-- celebration input: short positive reinforcement phrase (Tiny Habits principle) -->
-<div>
-  <label for="id_celebration_note">Celebration</label>
-  {{ form.celebration_note }}
-  <small>Feeling good locks habits in — keep it short and positive.</small>
+<div class="form-group">
+  <label for="id_celebration_note" class="form-label">Celebration</label>
+  {{ form.celebration_note|add_class:"form-input" }}
+  <small class="form-help">Feeling good locks habits in — keep it short and positive.</small>
 </div>
 
-<hr />
+<hr class="card-divider" />
 
 <!-- live preview area: shows “After I … I will …” as the user types -->
 <p><strong>Preview</strong></p>
-<p id="anchor-preview" aria-live="polite">After I … I will …</p>
+<p id="anchor-preview" aria-live="polite" class="text-muted">After I … I will …</p>
 
 <!-- small inline script for real-time preview updates -->
 <script>

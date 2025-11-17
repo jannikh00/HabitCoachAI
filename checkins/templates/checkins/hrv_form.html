@@ -6,16 +6,17 @@
 
 {% block content %}
 <!-- page heading -->
-<h2>New HRV Reading</h2>
+<h2 class="page-title">New HRV Reading</h2>
+<p class="page-subtitle">Enter your rMSSD, SDNN, resting HR, and optional notes.</p>
 
 <!-- HRV input form -->
-<form method="post">
+<form method="post" class="card">
   {% csrf_token %} <!-- security token to prevent cross-site request forgery -->
 
   <!-- render form fields with Django's default <p>-based layout -->
   {{ form.as_p }}
 
   <!-- submit button to save the HRV reading -->
-  <button class="btn btn-primary" type="submit">Save</button>
+  <button class="btn btn-primary mt-3" type="submit">Save</button>
 </form>
 {% endblock %}

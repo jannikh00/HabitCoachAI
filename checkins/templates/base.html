@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
 
@@ -8,25 +9,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- CSRF token for security -->
   {% csrf_token %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 
-<body>
-  <header>
-    <!-- Main navigation menu -->
-    <nav aria-label="Main">
-      {% if user.is_authenticated %}
-      <a href="{% url 'checkins:dashboard' %}">Dashboard</a>
-      <a href="{% url 'checkins:checkin_list' %}">My Check-ins</a>
-      <a href="{% url 'checkins:checkin_create' %}">New Check-in</a>
-      <a href="{% url 'users:logout' %}">Logout</a>
-      {% else %}
-      <a href="{% url 'users:login' %}">Login</a>
-      {% endif %}
-    </nav>
+<body class="app-body">
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div>
+        <div class="app-logo">HabitCoach AI</div>
+        <div class="app-tagline">Tiny, HRV-aware habit coaching</div>
+      </div>
+
+      <!-- Main navigation menu -->
+      <nav aria-label="Main" class="app-header-actions">
+        {% if user.is_authenticated %}
+        <a href="{% url 'checkins:dashboard' %}" class="btn btn-sm btn-secondary">Dashboard</a>
+        <a href="{% url 'checkins:checkin_list' %}" class="btn btn-sm btn-secondary">My Check-ins</a>
+        <a href="{% url 'checkins:checkin_create' %}" class="btn btn-sm btn-primary">New Check-in</a>
+        <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm">Logout</button>
+        </form>
+        {% else %}
+        <a href="{% url 'users:login' %}" class="btn btn-sm btn-primary">Login</a>
+        {% endif %}
+      </nav>
+    </div>
   </header>
 
   <!-- Main content area -->
-  <main id="content" tabindex="-1">{% block content %}{% endblock %}</main>
+  <main id="content" tabindex="-1" class="app-main">{% block content %}{% endblock %}</main>
+
+  <footer class="app-footer">
+    <p class="text-muted">© {{ now|date:"Y" }} HabitCoach AI</p>
+  </footer>
 </body>
 
 </html>

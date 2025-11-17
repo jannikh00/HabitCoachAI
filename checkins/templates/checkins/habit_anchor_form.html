@@ -4,22 +4,23 @@
 reinforcing small, prompt-based habits with positive emotion. #}
 
 {% extends "base.html" %}
+{% load form_tags %}
 
 {% block content %}
 <!-- page heading -->
-<h2>Create Tiny Habit Recipe</h2>
+<h2 class="page-title">Create Tiny Habit Recipe</h2>
 
 <!-- instructional text referencing Fogg’s Tiny Habits framework -->
-<p>Format: After I (anchor) ... I will (tiny behavior) ... then celebrate.</p>
+<p class="page-subtitle">Format: After I (anchor) ... I will (tiny behavior) ... then celebrate.</p>
 
 <!-- HabitAnchor creation form -->
-<form method="post">
+<form method="post" class="card">
     {% csrf_token %} <!-- CSRF protection token -->
 
     <!-- render form fields (anchor_action, tiny_behavior, celebration, is_active) -->
     {{ form.as_p }}
 
     <!-- submit button to save the new habit anchor -->
-    <button class="btn btn-primary" type="submit">Save</button>
+    <button class="btn btn-primary mt-3" type="submit">Save</button>
 </form>
 {% endblock %}

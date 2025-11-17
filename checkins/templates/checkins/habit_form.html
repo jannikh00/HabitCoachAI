@@ -2,26 +2,27 @@
 {# template for creating a new habit with name, anchor and celebration fields #}
 
 {% extends "base.html" %}
+{% load form_tags %}
 
 {% block content %}
 <!-- page heading -->
-<h1>Create Habit</h1>
+<h1 class="page-title">Create Habit</h1>
 
 <!-- habit creation form -->
-<form method="post">
+<form method="post" class="card">
   {% csrf_token %} <!-- CSRF protection token -->
 
   <!-- habit name input -->
-  <div>
-    <label for="id_name">Name</label>
-    {{ form.name }}
-    <small>Keep it tiny (e.g., “1 push-up”, “Open notes app”).</small>
+  <div class="form-group">
+    <label for="id_name" class="form-label">Name</label>
+    {{ form.name|add_class:"form-input" }}
+    <small class="form-help">Keep it tiny (e.g., “1 push-up”, “Open notes app”).</small>
   </div>
 
   <!-- include reusable partial for anchor, prompt type, and celebration fields -->
   {% include "checkins/_anchor_builder.html" %}
 
   <!-- submit button -->
-  <button type="submit">Save</button>
+  <button type="submit" class="btn btn-primary mt-3">Save</button>
 </form>
 {% endblock %}

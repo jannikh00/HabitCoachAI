@@ -58,7 +58,7 @@ def predict_habit_completion_probability(user):
     week_ago = now - timedelta(days=7)
 
     # 1) Behavioral feature: number of check-ins in the past week
-    recent_checkins = CheckIn.objects.filter(user=user, created_at__gte=week_ago)
+    recent_checkins = CheckIn.objects.filter(user=user, local_date__gte=week_ago)
     n_recent = recent_checkins.count()
 
     # 2) Physiological feature: latest HRV metrics (if available)

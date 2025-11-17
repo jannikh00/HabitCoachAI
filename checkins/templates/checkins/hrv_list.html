@@ -6,34 +6,36 @@
 
 {% block content %}
 <!-- page heading -->
-<h2>HRV History</h2>
+<h2 class="page-title">HRV History</h2>
 
 <!-- table for listing recent HRV readings -->
-<table>
-    <tr>
-        <th>Date</th>
-        <th>rMSSD</th>
-        <th>SDNN</th>
-        <th>Resting HR</th>
-        <th>Notes</th>
-    </tr>
+<section class="card">
+    <table class="table">
+        <tr>
+            <th>Date</th>
+            <th>rMSSD</th>
+            <th>SDNN</th>
+            <th>Resting HR</th>
+            <th>Notes</th>
+        </tr>
 
-    <!-- loop through all HRV readings passed from the view -->
-    {% for r in readings %}
-    <tr>
-        <!-- timestamp of the HRV measurement -->
-        <td>{{ r.measured_at }}</td>
+        <!-- loop through all HRV readings passed from the view -->
+        {% for r in readings %}
+        <tr>
+            <!-- timestamp of the HRV measurement -->
+            <td>{{ r.measured_at }}</td>
 
-        <!-- HRV metrics: short-term (rMSSD) and overall variability (SDNN) -->
-        <td>{{ r.rmssd_ms }}</td>
-        <td>{{ r.sdnn_ms }}</td>
+            <!-- HRV metrics: short-term (rMSSD) and overall variability (SDNN) -->
+            <td>{{ r.rmssd_ms }}</td>
+            <td>{{ r.sdnn_ms }}</td>
 
-        <!-- resting heart rate in bpm -->
-        <td>{{ r.resting_hr }}</td>
+            <!-- resting heart rate in bpm -->
+            <td>{{ r.resting_hr }}</td>
 
-        <!-- optional user notes (e.g., recovery context, post-training remarks) -->
-        <td>{{ r.notes }}</td>
-    </tr>
-    {% endfor %}
-</table>
+            <!-- optional user notes (e.g., recovery context, post-training remarks) -->
+            <td>{{ r.notes }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</section>
 {% endblock %}
