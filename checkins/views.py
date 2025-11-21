@@ -2,7 +2,7 @@ from __future__ import annotations
 
 # imports
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from zoneinfo import ZoneInfo
 from datetime import timedelta
@@ -10,6 +10,7 @@ from .models import CheckIn, Habit, HRVReading, HabitAnchor
 from .forms import CheckInForm, HabitForm, HRVReadingForm, HabitAnchorForm
 from .services.prompts import assign_prompt_variant
 from .services.scoring import predict_habit_completion_probability
+from types import SimpleNamespace
 
 
 # view that creates a daily check-in for the logged-in user
@@ -80,6 +81,35 @@ def checkin_list(request):
     return render(request, "checkins/list.html", {"checkins": qs})
 
 
+# edit an existing check-in for the logged-in user
+@login_required
+def checkin_edit_view(request, pk: int):
+
+    checkin = get_object_or_404(CheckIn, pk=pk, user=request.user)
+
+    if request.method == "POST":
+        form = CheckInForm(request.POST, instance=checkin)
+        if form.is_valid():
+            form.save()
+            return redirect("checkins:checkin_list")
+    else:
+        form = CheckInForm(instance=checkin)
+
+    return render(request, "checkins/form.html", {"form": form})
+
+
+# delete an existing check-in for the logged-in user
+@login_required
+def checkin_delete_view(request, pk: int):
+
+    checkin = get_object_or_404(CheckIn, pk=pk, user=request.user)
+
+    if request.method == "POST":
+        checkin.delete()
+
+    return redirect("checkins:checkin_list")
+
+
 # helper: compute current streak (consecutive check-ins up to today)
 def _compute_streak(user):
     dates = set(CheckIn.objects.filter(user=user).values_list("local_date", flat=True))
@@ -127,17 +157,61 @@ def _tiny_prompt_from_last(out):
     )
     if risky:
         # based on B=MAP: attach to routine, immediate, simple
-        return "After brushing your teeth: take one deep breath + one sip of water. (tiny, instant, anchored)"
+        return "After getting up in the morning: take one deep breath + one sip of water. (tiny, instant, anchored)"
     return "After breakfast: 10-second shoulder stretch. (small & consistent)"
 
 
-# helper: show HRV tip (Ref-B)
-def _hrv_tip_from_last(out, user):
-    # HRV (RMSSD) interpretation note — one low value ≠ low recovery
-    return (
-        "When measuring RMSSD, keep the time of day consistent. "
-        "A single low value means little without a 7-day trend."
-    )
+# helper: build a short HRV tip based on the latest reading (Ref-B)
+def _hrv_tip_from_last(latest_hrv: HRVReading | None) -> str:
+    """
+    Create a short, user-facing explanation for the HRV card.
+
+    - if no HRV data is available yet, explain what HRV/RMSSD are
+      and how the user can measure them
+    - if we have a recent RMSSD value, give a simple interpretation
+      (high / moderate / lower) plus optional resting HR context
+    """
+
+    # case 1: no data yet → explain HRV and how to measure it
+    if latest_hrv is None or latest_hrv.rmssd_ms is None:
+        return (
+            "Heart Rate Variability (HRV) describes how much the time between your "
+            "heartbeats changes from beat to beat. A simple way to track it is to "
+            "measure RMSSD once each morning with a wearable or HRV app while you "
+            "sit or lie still for about 60 seconds. Once you have a few days of "
+            "data, this card will show how today's value compares to your usual range."
+        )
+
+    # we have at least one RMSSD reading
+    rmssd = latest_hrv.rmssd_ms
+    resting_hr = latest_hrv.resting_hr
+
+    # start with the numeric fact for transparency
+    tip = f"Today's RMSSD is about {rmssd:.0f} ms."
+
+    # very simple, coarse interpretation ranges (educational, not clinical)
+    if rmssd >= 60:
+        tip += (
+            " That is relatively high for most people and usually reflects good "
+            "parasympathetic recovery."
+        )
+    elif rmssd >= 40:
+        tip += (
+            " That sits in a moderate range and often reflects normal day-to-day "
+            "variation."
+        )
+    else:
+        tip += (
+            " That is on the lower side and can appear when stress, poor sleep, or "
+            "training load are higher. Consider keeping today's habit especially "
+            "small and recovery-friendly."
+        )
+
+    # add resting HR context when available
+    if resting_hr:
+        tip += f" Your resting heart rate was around {resting_hr:.0f} bpm."
+
+    return tip
 
 
 # helper: simple moving average for smoothing mood data (Ref-C)
@@ -150,57 +224,60 @@ def _smooth(values, k=3):
     return res
 
 
-# map the most recent HRV reading into a coarse readiness category
+# see description below
 def _classify_readiness(latest_hrv: HRVReading | None) -> dict[str, str]:
+    """
+    Map the most recent HRV reading into a coarse readiness category.
 
-    # if we don't have any HRV reading yet, we fall back to a neutral state
-    if latest_hrv is None:
+    - uses RMSSD (ms) only, with simple thresholds:
+        * >= 60 ms  → High readiness
+        * 40–59 ms  → Moderate readiness
+        * < 40 ms   → Low readiness
+    - this keeps the logic aligned with the HRV note shown on the dashboard
+      and avoids contradictions like "RMSSD is high" + "Low readiness".
+    """
+
+    # no HRV reading at all or missing RMSSD: supportive fallback
+    rmssd = getattr(latest_hrv, "rmssd_ms", None) if latest_hrv is not None else None
+    if rmssd is None:
         return {
-            "label": "Unknown",
+            "label": "No HRV data yet",
             "description": (
-                "No HRV data yet. Consider adding a morning measurement to "
-                "better tune your training and habit load."
+                "We don't have HRV data for today. "
+                "Use this as a chance to keep your habit tiny "
+                "and celebrate one small win."
             ),
         }
 
-    # extract rMSSD (in milliseconds); if missing, treat as 0.0 to avoid crashes
-    rmssd = latest_hrv.rmssd_ms or 0.0
-    # extract resting heart rate; if missing, assume 70 bpm as a neutral baseline
-    resting_hr = latest_hrv.resting_hr or 70
-
-    # --- Simple heuristics inspired by Ref-B --------------------------------
-    # higher rMSSD and lower resting HR are generally associated with better recovery
-    # I use rough thresholds to keep this understandable by users
-    # NOTE: these are not clinical thresholds, just educational examples
-    # -------------------------------------------------------------------------
-
-    # Case 1: Strong recovery signal (green) – good day to push habits/training
-    if rmssd >= 60 and resting_hr <= 60:
+    # high readiness: RMSSD clearly in a higher range
+    if rmssd >= 60.0:
         return {
             "label": "High readiness",
             "description": (
-                "Your HRV suggests good recovery and low resting heart rate. "
-                "This is a great day to aim for a slightly more challenging habit."
+                "Your HRV suggests good recovery. "
+                "This is a good day to keep your tiny habits and, if you like, "
+                "slightly increase the challenge."
             ),
         }
 
-    # Case 2: Moderate recovery signal (yellow) – keep habits tiny and sustainable
-    if 40 <= rmssd < 60 and 60 < resting_hr <= 70:
+    # moderate readiness: normal day-to-day variation
+    if rmssd >= 40.0:
         return {
             "label": "Moderate readiness",
             "description": (
-                "Your HRV is in a moderate range. Stay consistent with tiny habits, "
-                "but avoid large jumps in difficulty."
+                "Your HRV is in a moderate range, which often reflects normal "
+                "day-to-day variation. Stay consistent with small, "
+                "manageable habits."
             ),
         }
 
-    # Case 3: Lower recovery signal (red) – lean heavily on Tiny Habits principles
-    # (Ref-A: emphasize shrinking the behavior and celebrating completion)
+    # low readiness: RMSSD clearly on the lower side
     return {
         "label": "Low readiness",
         "description": (
-            "Your current HRV pattern suggests higher load or incomplete recovery. "
-            "Keep habits very small today and focus on easy wins and celebration."
+            "Your current HRV pattern suggests higher load or incomplete "
+            "recovery. Keep habits very small today and focus on easy wins "
+            "and celebration."
         ),
     }
 
@@ -246,21 +323,91 @@ def dashboard(request):
     # precompute the count for easier template rendering
     risk_count = len(risk_days)
 
-    # 5) fetch the most recent HRV reading for the current user
+    # 5) fetch HRV only for today (strict mode)
+    tz = ZoneInfo("America/New_York")
+    today = timezone.now().astimezone(tz).date()
+
+    # try to find a dedicated HRVReading entry measured today
     latest_hrv = (
-        HRVReading.objects.filter(user=request.user)
-        .order_by("-measured_at")  # assuming `measured_at` datetime field exists
+        HRVReading.objects.filter(
+            user=request.user, measured_at__date=today  # strict: only today's date
+        )
+        .order_by("-measured_at")
         .first()
     )
+
+    # fallback: if no HRVReading exists for today, try CheckIn.hrv_rmssd for today
+    if latest_hrv is None:
+        today_checkin = CheckIn.objects.filter(
+            user=request.user, local_date=today, hrv_rmssd__isnull=False
+        ).first()
+
+        if today_checkin:
+            # create a lightweight object to mimic HRVReading
+            latest_hrv = SimpleNamespace(
+                rmssd_ms=today_checkin.hrv_rmssd,
+                resting_hr=None,
+                measured_at=today_checkin.local_date,
+            )
 
     # classify readiness using our helper (Ref-B)
     readiness_info = _classify_readiness(latest_hrv)
 
+    # build a short HRV note for the dashboard card (Ref-B)
+    hrv_tip = _hrv_tip_from_last(latest_hrv)
+
     # 6) compute the predicted adherence probability for the next habit
     completion_probability = predict_habit_completion_probability(request.user)
 
-    # convert to a percentage with one decimal place for display
-    completion_probability_percent = round(completion_probability * 100.0, 1)
+    # default values when probability is missing or outside expected range
+    completion_probability_percent = 0.0
+    completion_explanation = (
+        "We were not able to compute a reliable forecast today. "
+        "Use your own judgment and keep your next habit small."
+    )
+
+    # only proceed if the model actually returned a numeric probability
+    if completion_probability is not None:
+        # convert to a percentage with one decimal place for display
+        completion_probability_percent = round(completion_probability * 100.0, 1)
+
+        # check that the value lies within the expected probability range [0, 1]
+        if 0.0 <= completion_probability <= 1.0:
+            # convert the fraction (e.g., 0.58) into a percentage (e.g., 58%)
+            completion_percent = int(round(completion_probability * 100))
+
+            # base explanation shown to the user, describing what the number means
+            completion_explanation = (
+                f"This percentage is a simple estimate of how likely "
+                f"you are to complete your next habit today ({completion_percent}%)."
+            )
+
+            # low forecast: <33% -> emphasize making the habit tiny and easy
+            if completion_probability < 0.33:
+                completion_explanation += (
+                    " It looks like today might be challenging. "
+                    "Shrink your habit and celebrate any small success."
+                )
+
+            # medium forecast: 33–67% -> neutral guidance
+            elif completion_probability < 0.67:
+                completion_explanation += (
+                    " Your odds are moderate. A clear plan and a tiny habit can help."
+                )
+
+            # high forecast: >67% -> positive momentum but still framed as probability, not certainty
+            else:
+                completion_explanation += (
+                    " Today looks favorable. Stick to your plan and enjoy the momentum."
+                )
+
+    # if probability is None: fallback to 0%
+    else:
+        completion_probability_percent = 0.0
+
+    # generates a personalized suggestion based on the last 7 days
+    # helper _tiny_prompt_from_last(trend) already existed from earlier iteration
+    tiny_prompt = _tiny_prompt_from_last(trend)
 
     # 7) Build the context dictionary for the template
     context = {
@@ -275,6 +422,12 @@ def dashboard(request):
         "readiness": readiness_info,
         # logistic-model forecast percentage (Step 6)
         "completion_prob": completion_probability_percent,
+        # logistic-model forecast explanation (Step 6)
+        "completion_explanation": completion_explanation,
+        # tiny habit suggestion
+        "tiny_prompt": tiny_prompt,
+        # HRV tip
+        "hrv_tip": hrv_tip,
     }
 
     # 8) Render the dashboard template with the full analytics context
@@ -368,23 +521,79 @@ def habit_anchor_create_view(request):
 @login_required
 def habit_anchor_list_view(request):
 
-    anchors = HabitAnchor.objects.filter(user=request.user, is_active=True)
+    anchors = HabitAnchor.objects.filter(user=request.user).order_by("-created_at")
     return render(request, "checkins/habit_anchor_list.html", {"anchors": anchors})
 
 
-# render the main user dashboard, extended for Week 7 with predictive analytics
+# toggle the 'is_active' flag for a single habit anchor
 @login_required
-def dashboard_view(request):
+def habit_anchor_toggle_active_view(request, pk: int):
 
-    # compute personalized habit completion probability
-    completion_prob = predict_habit_completion_probability(request.user)
+    anchor = get_object_or_404(HabitAnchor, pk=pk, user=request.user)
 
-    # build dashboard context dictionary
+    if request.method == "POST":
+        anchor.is_active = not anchor.is_active
+        anchor.save()
+
+    return redirect("checkins:habit-anchor-list")
+
+
+# edit an existing Tiny Habits–style anchor
+@login_required
+def habit_anchor_edit_view(request, pk: int):
+
+    anchor = get_object_or_404(HabitAnchor, pk=pk, user=request.user)
+
+    if request.method == "POST":
+        form = HabitAnchorForm(request.POST, instance=anchor)
+        if form.is_valid():
+            form.save()
+            return redirect("checkins:habit-anchor-list")
+    else:
+        form = HabitAnchorForm(instance=anchor)
+
+    return render(
+        request,
+        "checkins/habit_anchor_form.html",
+        {"form": form},
+    )
+
+
+# delete an existing habit anchor
+@login_required
+def habit_anchor_delete_view(request, pk: int):
+
+    anchor = get_object_or_404(HabitAnchor, pk=pk, user=request.user)
+
+    if request.method == "POST":
+        anchor.delete()
+
+    return redirect("checkins:habit-anchor-list")
+
+
+# render an 'About & Methods' page that explains:
+@login_required
+def about_methods_view(request):
+    # create a dictionary containing the high-level description of each reference
     context = {
-        # display probability as a percentage rounded to one decimal place
-        "completion_prob": round(completion_prob * 100, 1),
-        # TODO: merge with other Week 6 context keys (e.g., streaks, trends)
+        # short explanation of Tiny Habits (Ref-A) for the template
+        "tiny_habits_summary": (
+            "This app uses B.J. Fogg's Tiny Habits method by pairing small, "
+            "easy behaviors with existing daily 'anchors' and celebrating each success."
+        ),
+        # short explanation of HRV readiness (Ref-B) for the template
+        "hrv_summary": (
+            "Heart rate variability (HRV) metrics like RMSSD and resting heart rate "
+            "are used as readiness signals, following current sports science research "
+            "on training load and recovery."
+        ),
+        # short explanation of ISL-inspired modeling (Ref-C) for the template
+        "isl_summary": (
+            "Inspired by 'An Introduction to Statistical Learning', "
+            "the app combines recent check-in trends and HRV data into a simple, "
+            "interpretable probability score instead of a black-box model."
+        ),
     }
 
-    # render dashboard template with predictive metric included
-    return render(request, "checkins/dashboard.html", context)
+    # render the 'checkins/about_methods.html' template with the context
+    return render(request, "checkins/about_methods.html", context)

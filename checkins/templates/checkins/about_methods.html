@@ -1,0 +1,208 @@
+{# templates/checkins/about_methods.html #}
+
+{% extends "base.html" %}
+
+{% block content %}
+<section aria-labelledby="about-methods-heading">
+
+    <!-- main page heading for assistive technologies -->
+    <h1 id="about-methods-heading">About HabitCoach AI</h1>
+
+    <!-- short intro: explains what the prototype does -->
+    <p>
+        HabitCoach AI is a small research-inspired prototype that combines
+        behavior design, physiological data and simple predictive analytics
+        to support daily habit building.
+    </p>
+
+    <hr>
+
+    <!-- =======================================================================
+     HOW TO USE THE APP – PRACTICAL USER GUIDE
+     -----------------------------------------------------------------------
+     This section explains the main functions (anchors, check-ins, dashboard)
+     and the recommended routine: morning plan, evening reflection, weekly review.
+     Static content only – no changes in Django views required.
+     ======================================================================= -->
+    <section aria-labelledby="how-to-heading">
+        <!-- Main heading for the usage guide -->
+        <h2 id="how-to-heading">How to Use HabitCoach AI</h2>
+
+        <!-- High-level overview of the core functions -->
+        <br>
+        <h3>Main functions</h3>
+        <ul>
+            <li>
+                <strong>Create tiny habit anchors.</strong><br>
+                Use <em>“New Habit Anchor”</em> to define recipes in the format
+                <em>“After I &hellip; I will &hellip; then celebrate.”</em>
+                Example: “After I start my laptop, I will open HabitCoach AI and I will say
+                ‘Nice!’ to myself.”
+            </li>
+            <li>
+                <strong>Log a daily check-in.</strong><br>
+                Use <em>“New Check-in”</em> to record your expected or actual
+                <strong>status</strong> (OK / At Risk / Blocked), <strong>mood</strong> (1–5),
+                short <strong>notes</strong>, <strong>tags</strong> (e.g. <code>bad-sleep,exam-day,matchday</code>),
+                and optional <strong>HRV</strong> values such as RMSSD.
+            </li>
+            <li>
+                <strong>Review the dashboard.</strong><br>
+                On the <em>Dashboard</em> you can see your streak, a 7-day trend, a
+                <strong>Tiny Habit suggestion</strong>, an <strong>HRV note</strong> and
+                <strong>Today’s Readiness</strong>. This keeps planning short while still
+                giving meaningful guidance.
+            </li>
+            <li>
+                <strong>Scale effort based on readiness.</strong><br>
+                When readiness is low (e.g. poor sleep or low HRV), keep your habits
+                very small and easy. When readiness is higher, you can choose to do a
+                slightly bigger version of the same habit.
+            </li>
+            <li>
+                <strong>Iterate and refine.</strong><br>
+                Over time you can adjust which anchors are active, which habits you track,
+                and how you respond to the patterns you see on the dashboard.
+            </li>
+        </ul>
+
+        <!-- Recommended daily routine: morning plan + evening reflection -->
+        <br>
+        <h3>Recommended daily routine</h3>
+
+        <!-- Morning routine: create or update today's check-in -->
+        <br>
+        <h4>🌅 Morning: quick readiness &amp; plan</h4>
+        <ol>
+            <li>
+                <strong>Measure HRV once.</strong><br>
+                Ideally right after waking, use your watch or HRV app to record your
+                morning RMSSD (and resting heart rate if available).
+            </li>
+            <li>
+                <strong>Create or update today’s check-in.</strong><br>
+                Open <em>“New Check-in”</em> and log:
+                <ul>
+                    <li><strong>Status</strong> &mdash; how ready / on track you expect to be (OK / At Risk / Blocked)
+                    </li>
+                    <li><strong>Mood</strong> &mdash; how you feel right now (1&ndash;5)</li>
+                    <li><strong>HRV RMSSD</strong> &mdash; your morning value in ms</li>
+                    <li><strong>Tags</strong> &mdash; short labels like <code>bad-sleep</code>, <code>exam-day</code>,
+                        <code>matchday</code>
+                    </li>
+                    <li><strong>Note</strong> &mdash; a short context line (e.g. “slept 6h, exam at 2pm”)</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Check the Dashboard.</strong><br>
+                Look at <strong>Today’s Readiness</strong> and the <strong>HRV Note</strong>,
+                read the <strong>Tiny Habit Suggestion</strong> and decide your
+                “tiny minimum” for the day &mdash; the version of your habit you will do
+                even if everything else goes wrong.
+            </li>
+        </ol>
+
+        <p>
+            After the morning setup, simply follow your Tiny Habit anchors in daily life:
+            when the anchor happens, do the tiny behavior and celebrate.
+        </p>
+
+        <!-- Evening routine: update the same check-in with actual results -->
+        <br>
+        <h4>🌆 Evening: reality check</h4>
+        <ol>
+            <li>
+                <strong>Open “My Check-ins”.</strong><br>
+                Find today’s row and click <em>Edit</em>.
+            </li>
+            <li>
+                <strong>Update today’s entry.</strong><br>
+                Adjust:
+                <ul>
+                    <li><strong>Status</strong> &mdash; how the day actually went</li>
+                    <li><strong>Mood</strong> &mdash; how you feel at the end of the day</li>
+                    <li><strong>Note</strong> &mdash; what happened (e.g. “felt tired but still did tiny habit”,
+                        “skipped training”)</li>
+                    <li><strong>Tags</strong> &mdash; add context like <code>travel</code>, <code>injury</code>,
+                        <code>late-night</code> if relevant
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <strong>Save.</strong><br>
+                Morning is “plan + readiness”; evening is “actual result + reflection” on the
+                same daily record.
+            </li>
+        </ol>
+
+        <!-- Weekly reflection: spot patterns and adjust anchors -->
+        <br>
+        <h4>📅 Weekly: pattern spotting</h4>
+        <ul>
+            <li>
+                <strong>Review the Dashboard.</strong><br>
+                Notice how often you see <strong>risk days</strong>, which tags cluster
+                around low mood or “At Risk” status (e.g. <code>late-night</code>,
+                <code>matchday</code>, <code>exam</code>) and whether low-readiness HRV
+                days match days where you struggled to complete your habits.
+            </li>
+            <li>
+                <strong>Refine your habit anchors.</strong><br>
+                In <em>“My Habit Anchors”</em>, turn off anchors that do not fit real life
+                by unchecking <strong>Is active</strong> and keep 1&ndash;3 very small
+                anchors that you actually enjoy doing.
+            </li>
+        </ul>
+    </section>
+
+    <hr>
+
+    <!-- ----------------------------- 
+       Section 1: Tiny Habits (Ref-A)
+       - content is passed in from the view as tiny_habits_summary
+       - based on the B.J. Fogg behavior model
+       ----------------------------- -->
+    <h2>Behavior Design: Tiny Habits (Ref-A)</h2>
+    <p>{{ tiny_habits_summary }}</p>
+    <ul>
+        <li>We use “After I … I will …” prompts to define anchors.</li>
+        <li>We prioritize very small, easy behaviors over ambitious goals.</li>
+        <li>We add micro-celebrations after successful check-ins.</li>
+    </ul>
+
+    <!-- ----------------------------- 
+       Section 2: HRV Readiness (Ref-B)
+       - summary injected by the view
+       - draws from HRV research on RMSSD, SDNN, recovery
+       ----------------------------- -->
+    <h2>Physiological Readiness: HRV (Ref-B)</h2>
+    <p>{{ hrv_summary }}</p>
+    <ul>
+        <li>Metrics: RMSSD (ms), SDNN (ms) and resting heart rate (bpm).</li>
+        <li>Lower RMSSD / higher resting HR can indicate lower readiness.</li>
+        <li>The app surfaces categories like “High / Moderate / Low readiness.”</li>
+    </ul>
+
+    <!-- -----------------------------
+       Section 3: Predictive Analytics (Ref-C)
+       - based on simple logistic-style calculations (ISL 2e)
+       - idea: lightweight, transparent modeling
+       ----------------------------- -->
+    <h2>Predictive Analytics: ISL-Inspired Model (Ref-C)</h2>
+    <p>{{ isl_summary }}</p>
+    <ul>
+        <li>We combine recent streak data and latest HRV readings.</li>
+        <li>We use a logistic-style formula to compute a completion probability.</li>
+        <li>The goal is interpretability, not complex black-box accuracy.</li>
+    </ul>
+
+    <hr>
+
+    <!-- closing paragraph: explains why these 3 references matter -->
+    <p>
+        This page summarizes how core design decisions are grounded in
+        research (Ref-A, Ref-B, Ref-C) while keeping the app simple
+        and transparent.
+    </p>
+</section>
+{% endblock %}

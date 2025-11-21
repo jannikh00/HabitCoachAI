@@ -1,7 +1,7 @@
-{# checkins/templates/checkins/habit_anchor_list.html #}
-{# Template for displaying all active Tiny Habits anchors for the user #}
-{# Context: Each anchor follows the pattern “After I [anchor_action], I will [tiny_behavior]”
-with optional celebration text, reflecting Fogg’s behavior model (Prompt–Action–Celebrate) #}
+<!-- checkins/templates/checkins/habit_anchor_list.html
+Template for displaying all active Tiny Habits anchors for the user
+Context: Each anchor follows the pattern “After I [anchor_action], I will [tiny_behavior]”
+with optional celebration text, reflecting Fogg’s behavior model (Prompt–Action–Celebrate) -->
 
 {% extends "base.html" %}
 
@@ -9,25 +9,63 @@ with optional celebration text, reflecting Fogg’s behavior model (Prompt–Act
 <!-- page heading -->
 <h2 class="page-title">My Habit Anchors</h2>
 
-<!-- unordered list of all active habit anchors -->
 <section class="card">
-    <ul class="risk-day-list">
-        <!-- loop through each active HabitAnchor passed from the view -->
-        {% for a in anchors %}
-        <li class="risk-day-item">
-            <!-- display formatted Tiny Habits recipe, including optional celebration -->
-            <span class="risk-day-text">
-                <strong>After {{ a.anchor_action }}</strong>
-                I will {{ a.tiny_behavior }}
-                {% if a.celebration %}
-                and celebrate by {{ a.celebration }}
-                {% endif %}
-            </span>
-        </li>
-        {% empty %}
-        <!-- message shown if the user has no active anchors -->
-        <li class="risk-day-item text-muted">No anchors yet.</li>
-        {% endfor %}
-    </ul>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Anchor action</th>
+                <th>Tiny behavior</th>
+                <th>Celebration</th>
+                <th>Active?</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in anchors %}
+            <tr>
+                <!-- Tiny Habits syntax: After [anchor_action] I will [tiny_behavior] -->
+                <td><strong>After {{ a.anchor_action }}</strong></td>
+                <td>{{ a.tiny_behavior }}</td>
+                <td>
+                    {% if a.celebration %}
+                    {{ a.celebration }}
+                    {% else %}
+                    –
+                    {% endif %}
+                </td>
+
+                <!-- Toggle is_active via small POST form -->
+                <td>
+                    <form method="post" action="{% url 'checkins:habit-anchor-toggle' a.pk %}" style="display:inline">
+                        {% csrf_token %}
+                        <label>
+                            <input type="checkbox" name="is_active" {% if a.is_active %}checked{% endif %}
+                                onchange="this.form.submit()">
+                            Active
+                        </label>
+                    </form>
+                </td>
+
+                <!-- Edit / Delete links -->
+                <td>
+                    <a href="{% url 'checkins:habit-anchor-edit' a.pk %}">Edit</a>
+                    <form method="post" action="{% url 'checkins:habit-anchor-delete' a.pk %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-link text-danger"
+                            onclick="return confirm('Delete this habit anchor? This cannot be undone.')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-muted">
+                    No anchors yet. Create one via “New Habit Anchor”.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </section>
 {% endblock %}

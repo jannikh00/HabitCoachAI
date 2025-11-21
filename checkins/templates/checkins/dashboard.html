@@ -14,18 +14,44 @@
   <p class="streak-summary">{{ streak.days }} days</p>
 </section>
 
+<!-- Displays prompt to do check-in for the day if not done yet -->
+<p class="streak-message">
+  {{ streak_message }}
+</p>
+
 <!-- (2) Mood and status trend over the past 7 days -->
-<!-- Uses Django context variable 'trend', showing daily mood/status values -->
+<!-- Uses Django context variable 'trend', shown in a compact table -->
 <section aria-labelledby="trend" class="card">
   <h2 id="trend" class="card-title">7-Day Trend (Mood/Status)</h2>
-  <ul>
-    {% for point in trend %}
-    <!-- Each list item displays a date with associated mood and status -->
-    <li>{{ point.date }} — mood={{ point.mood|default:"–" }}, status={{ point.status }}</li>
-    {% endfor %}
-  </ul>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Mood</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for point in trend|slice:"::-1" %}
+      <tr>
+        <!-- Local calendar date -->
+        <td>{{ point.date }}</td>
+
+        <!-- Raw mood (1–5) or dash if missing -->
+        <td>{{ point.mood|default:"–" }}</td>
+
+        <!-- Status code (ok / warn / block / miss) -->
+        <td>{{ point.status }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
   <!-- Reference: (Ref-C) background calculation of a 3-day moving average for mood tracking -->
-  <p class="text-muted"><small>(Ref-C) 3-Day moving average for mood calculated in background.</small></p>
+  <p class="text-muted">
+    <small>(Ref-C) 3-Day moving average for mood is calculated in the background for analytics.</small>
+  </p>
 </section>
 
 <!-- Small Analytics Extension (Ref-C)
@@ -72,12 +98,44 @@
 </section>
 
 <!-- (4) HRV tip section -->
-<!-- Displays short context-based heart rate variability insights for recovery tracking -->
 <section aria-labelledby="hrv" class="card">
   <h2 id="hrv" class="card-title">HRV Note</h2>
+
+  <!-- dynamic insight generated from latest RMSSD (backend) -->
   <p>{{ hrv_tip }}</p>
-  <!-- Reference: (Ref-B) RMSSD interpretation from *Frontiers in Sports and Active Living* (Storniolo et al., 2025) [oai_citation:1‡fspor-1-1574087.pdf](file-service://file-3EVASBZjiZtSikC4S7tY8U) -->
-  <p class="text-muted"><small>(Ref-B) Short Info about RMSSD Interpretation.</small></p>
+
+  <!-- static educational explanations for users -->
+  <br>
+  <h3 class="card-subtitle">What is HRV?</h3>
+  <p>
+    Heart Rate Variability (HRV) is the variation in time between your heartbeats.
+    Higher HRV usually reflects better recovery and stronger parasympathetic activity
+    (“rest and restore”), while lower HRV can reflect stress, fatigue or poor sleep.
+  </p>
+
+  <br>
+  <h3 class="card-subtitle">What is RMSSD?</h3>
+  <p>
+    RMSSD (Root Mean Square of Successive Differences) is one of the most reliable
+    short-term HRV metrics. It captures rapid changes in your nervous system and
+    is widely used in sports science to monitor recovery and training load.
+  </p>
+
+  <br>
+  <h3 class="card-subtitle">How can I measure HRV?</h3>
+  <ul>
+    <li>Use a wearable: Apple Watch, Garmin, Oura, WHOOP or a Polar chest strap</li>
+    <li>Or use a smartphone app: HRV4Training, EliteHRV, ithlete, Welltory</li>
+    <li>Measure in the morning, right after waking, while sitting or lying still</li>
+    <li>One 60-second reading is usually enough for daily RMSSD</li>
+  </ul>
+
+  <!-- Reference to scientific source (Ref-B) -->
+  <br>
+  <p class="text-muted">
+    <small>(Ref-B) Based on RMSSD interpretation from *Frontiers in Sports and Active Living* (Storniolo et al.,
+      2025).</small>
+  </p>
 </section>
 
 <!-- HRV-based readiness card -->
@@ -109,8 +167,11 @@
 <section aria-labelledby="forecast" class="card">
   <h2 id="forecast" class="card-title">Today’s Adherence Forecast</h2>
 
-  <!-- Display computed completion probability (from Week 7 logistic model) -->
+  <!-- Display computed completion probability -->
   <p class="forecast-value">{{ completion_prob }}% likelihood you’ll complete your next habit.</p>
+
+  <!-- Explanation helping users understand what the forecast means -->
+  <p class="forecast-explanation"> {{ completion_explanation }} </p>
 
   <!-- Explanatory note connecting behavioral and physiological data -->
   <p class="forecast-caption text-muted">

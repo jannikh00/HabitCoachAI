@@ -24,6 +24,9 @@
       <nav aria-label="Main" class="app-header-actions">
         {% if user.is_authenticated %}
         <a href="{% url 'checkins:dashboard' %}" class="btn btn-sm btn-secondary">Dashboard</a>
+        <a href="{% url 'checkins:about_methods' %}" class="btn btn-sm btn-secondary">About</a>
+        <a href="{% url 'checkins:habit-anchor-list' %}" class="btn btn-sm btn-secondary">My Habit Anchors</a>
+        <a href="{% url 'checkins:habit-anchor-create' %}" class="btn btn-sm btn-secondary">New Habit Anchor</a>
         <a href="{% url 'checkins:checkin_list' %}" class="btn btn-sm btn-secondary">My Check-ins</a>
         <a href="{% url 'checkins:checkin_create' %}" class="btn btn-sm btn-primary">New Check-in</a>
         <form method="post" action="{% url 'users:logout' %}" style="display:inline;">

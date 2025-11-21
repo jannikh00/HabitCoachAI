@@ -16,6 +16,8 @@
         <th>Status</th>
         <th>Mood</th>
         <th>HRV</th>
+        <th>Notes</th>
+        <th>Actions</th>
       </tr>
     </thead>
 
@@ -35,12 +37,27 @@
         <!-- HRV RMSSD (ms), or dash if not provided -->
         <!-- Optional physiological metric for recovery tracking -->
         <td>{{ c.hrv_rmssd|default:"–" }}</td>
+
+        <!-- Free-text note, or dash if empty -->
+        <td>{{ c.note|default:"–" }}</td>
+
+        <!-- Edit / Delete actions -->
+        <td>
+          <a href="{% url 'checkins:checkin_edit' c.pk %}">Edit</a>
+          <form method="post" action="{% url 'checkins:checkin_delete' c.pk %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn-link text-danger"
+              onclick="return confirm('Delete this check-in? This cannot be undone.')">
+              Delete
+            </button>
+          </form>
+        </td>
       </tr>
 
       <!-- Fallback row if user has no check-ins yet -->
       {% empty %}
       <tr>
-        <td colspan="4" class="text-muted">No check-ins yet.</td>
+        <td colspan="6" class="text-muted">No check-ins yet.</td>
       </tr>
       {% endfor %}
     </tbody>

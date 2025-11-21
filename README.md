@@ -58,10 +58,11 @@ The project enables users to perform **daily check-ins** with mood tracking, not
 - Implemented custom UserLoginView and UserLogoutView with dedicated routing (users/urls.py) and integrated them into the project navigation
 - Refactored navigation bar with authentication-aware links and consistent namespaced URL usage (checkins: / users:)
 - Created a new superuser and validated Django admin access for all Week 7 data models (HRVReading, HabitAnchor, CheckIn)
+- Refining details
 
 ---
 
-## Current Progress (Week 8)
+## Progress (Week 8)
 
 - Unified the dashboard view to merge streak analytics, 7-day trend data, mood smoothing, risk-day detection, HRV readiness and adherence forecasting into one coherent backend pipeline
 - Added _classify_readiness() helper using rmssd_ms and resting_hr to generate “High / Moderate / Low readiness” categories based on HRV recovery indicators from Frontiers in Sports & Active Living (Ref-B)
@@ -74,6 +75,34 @@ The project enables users to perform **daily check-ins** with mood tracking, not
 - Enforced authentication on the dashboard using @login_required to prevent anonymous-user errors in streak/HRV queries
 - Completed integration of the new navigation and styling across templates
 - Resolved logout routing and template discovery issues (users/logout.html) and fixed static file loading to ensure consistent UI across all screens
+- Refining details
+
+---
+
+## Progress (Week 9)
+
+- Added an **About & Methods** page explaining how HabitCoach AI is grounded in:
+  - Tiny Habits behavior design (Ref-A, Tiny Habits PDF)
+  - HRV-based readiness from sports science (Ref-B, Frontiers in Sports & Active Living)
+  - Simple, interpretable predictive modeling (Ref-C, ISL 2e)
+- Added a **“How to Use HabitCoach AI” guide** outlining the recommended daily routine
+  (morning planning, evening reflection) and weekly pattern review
+- Added **delete confirmations** for both check-ins and habit anchors to prevent
+  accidental removal
+- Improved **dashboard UX and error handling** for missing HRV and check-in data,
+  using Tiny Habits framing to encourage small, achievable actions (Ref-A)
+- Replaced the 7-day trend list with a clean **7-Day Trend Table** for improved readability
+- Added stricter **“today-only HRV” logic**, ensuring readiness and HRV notes only appear
+  when a measurement was taken on the same day
+- Updated styling across the dashboard:
+  - cleaned up table layout  
+  - improved spacing and visual consistency  
+  - unified card styling for analytics sections  
+- Extended the **adherence forecast** with ISL-inspired probability bands and friendly,
+  transparent explanations (Ref-C)
+- Added **Week 9 tests** validating the About & Methods view and dashboard context fields
+  (readiness, HRV note, adherence explanation)
+- Ongoing refinement and polishing of UI, backend helpers and templates
 
 ---
 
