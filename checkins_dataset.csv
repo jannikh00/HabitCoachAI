@@ -1,0 +1,16 @@
+mood,status,hrv_rmssd,completed
+3,warn,35.0,0
+2,ok,35.0,1
+2,warn,50.0,0
+,ok,50.0,1
+4,ok,70.0,1
+3,ok,50.0,1
+3,block,,0
+4,warn,70.0,0
+5,block,,0
+2,warn,,0
+5,ok,,1
+4,ok,,1
+3,warn,70.0,0
+5,ok,70.0,1
+5,ok,70.0,1

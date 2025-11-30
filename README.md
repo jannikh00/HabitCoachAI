@@ -106,6 +106,17 @@ The project enables users to perform **daily check-ins** with mood tracking, not
 
 ---
 
+## Add ML export command + offline training script for Level-1 ML evaluation
+
+- Added Django management command `export_checkins_for_ml`
+- Exports check-in data into `checkins_dataset.csv`
+- Added standalone training script `ml/train_readiness_model.py`
+- Includes preprocessing, missing-value imputation, and logistic regression
+- Prints evaluation metrics (AUC, precision, recall)
+- Saves model + scaler for potential future integration
+
+---
+
 **References**
 
 - (Ref-A) Fogg, B.J. – *Tiny Habits* (Behavior Design, Stanford)  
